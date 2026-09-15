@@ -3,5 +3,12 @@
   "name": "water-on-call-website",
   "main": "src/customer-overlay.js",
   "compatibility_date": "2026-09-15",
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "PRODUCTION_DB",
+      "database_name": "water-on-call-production",
+      "database_id": "7642bdff-a251-490f-aeca-a5f6126c9964"
+    }
+  ]
 }
