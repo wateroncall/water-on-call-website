@@ -31,6 +31,13 @@ async function syncAdminWaitlist(lead){
  try{const r=await fetch(ADMIN_WAITLIST_URL,{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:JSON.stringify({name:lead.name,email:lead.email,phone:lead.phone||null,postal_code:lead.postal||null,water_need:needs[lead.need]||'other',signup_type:'customer',source:'website',marketing_consent:true})});if(!r.ok)console.error('Laravel waitlist sync failed',r.status,await r.text());return r.ok}catch(err){console.error('Laravel waitlist sync failed',err);return false}
 }
 
+async function backfillAdminWaitlist(env){
+ if(!env.PRODUCTION_DB)return;
+ await env.PRODUCTION_DB.prepare('CREATE TABLE IF NOT EXISTS waitlist_admin_sync (email TEXT PRIMARY KEY, synced_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)').run();
+ const rows=await env.PRODUCTION_DB.prepare('SELECT w.name,w.email,w.phone,w.postal_code,w.water_need FROM customer_waitlist w LEFT JOIN waitlist_admin_sync s ON lower(s.email)=lower(w.email) WHERE s.email IS NULL ORDER BY w.rowid LIMIT 8').all();
+ for(const row of rows.results||[]){const lead={name:row.name,email:row.email,phone:row.phone||'',postal:row.postal_code||'',need:row.water_need||'Other'};if(await syncAdminWaitlist(lead))await env.PRODUCTION_DB.prepare('INSERT OR REPLACE INTO waitlist_admin_sync(email,synced_at) VALUES (?,CURRENT_TIMESTAMP)').bind(String(row.email).toLowerCase()).run()}
+}
+
 async function notifyWaitlist(env,lead){
  if(!env.RESEND_API_KEY)return {skipped:true,reason:'missing_secret'};
  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,7 +47,7 @@ async function notifyWaitlist(env,lead){
 }
 
 export default {async fetch(req,env,ctx){const url=new URL(req.url);const path=url.pathname.replace(/\/$/,'')||'/';
- if(path==='/join'&&req.method==='GET')return new Response(launchPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}});
+ if(path==='/join'&&req.method==='GET'){if(ctx&&ctx.waitUntil)ctx.waitUntil(backfillAdminWaitlist(env));return new Response(launchPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}})}
  if(path==='/__resend-test'&&req.method==='GET'){
   if(url.searchParams.get('run')!=='1')return Response.json({secretAvailable:!!env.RESEND_API_KEY,instructions:'Add ?run=1 to send one diagnostic email. This does not touch the waitlist database.'});
   const result=await notifyWaitlist(env,{name:'Resend Diagnostic Test',email:'info@wateroncall.ca',phone:'',postal:'',need:'Diagnostic only'});return Response.json({secretAvailable:!!env.RESEND_API_KEY,resend:result});
@@ -55,4 +62,4 @@ export default {async fetch(req,env,ctx){const url=new URL(req.url);const path=u
   catch(err){if(String(err).toLowerCase().includes('unique')){if(ctx&&ctx.waitUntil)ctx.waitUntil(syncAdminWaitlist(lead));else await syncAdminWaitlist(lead);return Response.json({ok:true,duplicate:true})}console.error('waitlist insert failed',err);return Response.json({error:'We could not save your signup. Please try again.'},{status:500})}
  }
  const res=await base.fetch(req,env,ctx);if(path==='/'){let html=await res.text();html=html.replaceAll('href="https://app.wateroncall.ca/"','href="/join"');const headers=new Headers(res.headers);headers.delete('content-length');return new Response(html,{status:res.status,headers});}
- if(path!=='/demo/customer'||res.status!==200)return res;let html=await res.text();html=html.replace('</body>',customerScript+'</body>');const headers=new Headers(res.headers);headers.delete('content-length');return new Response(html,{status:res.status,headers});}};
+ if(path!=='/demo/customer'||res.status!==200)return res;let html=await res.text();html=html.replace('</body>',customerScript+'</body>');const headers=new Headers(res.headers);headers.delete('content-length');return new Response(html,{status:res.status,headers});},async scheduled(_event,env,ctx){ctx.waitUntil(backfillAdminWaitlist(env))}};
