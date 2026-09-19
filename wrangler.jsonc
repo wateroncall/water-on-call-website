@@ -4,6 +4,7 @@
   "main": "src/customer-overlay.js",
   "compatibility_date": "2026-09-15",
   "observability": { "enabled": true },
+  "triggers": { "crons": ["*/10 * * * *"] },
   "d1_databases": [
     {
       "binding": "PRODUCTION_DB",
