@@ -23,16 +23,12 @@ async function notifyWaitlist(env,lead){
  const text=await r.text();if(!r.ok)console.error('Resend waitlist notification failed',r.status,text);return {status:r.status,ok:r.ok,body:text.slice(0,1000)};
 }
 
-export default {async fetch(req,env,ctx){const url=new URL(req.url);const path=url.pathname.replace(/\/$/,'')||'/';
+const application = {async fetch(req,env,ctx){const url=new URL(req.url);const path=url.pathname.replace(/\/$/,'')||'/';
  if(path==='/api/availability'&&req.method==='POST'){
   if(Number(req.headers.get('content-length')||0)>8192)return Response.json({message:'Submission is too large.'},{status:413});
   try{const raw=await req.text();if(raw.length>8192)return Response.json({message:'Submission is too large.'},{status:413});JSON.parse(raw);const response=await fetch('https://wateroncall-backend-production-cov9zr.laravel.cloud/api/v1/booking-preview',{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:raw,signal:AbortSignal.timeout(20000)});const result=await response.json();if(response.ok)return Response.json(result,{headers:{'cache-control':'no-store'}});return Response.json({message:response.status===422?(Object.values(result.errors||{}).flat()[0]||result.message||'Check the delivery details and try again.'):response.status===429?'Too many checks. Please wait a minute before trying again.':response.status===503?'Online coverage checks are being prepared. Join the launch list for follow-up.':'Coverage checks are temporarily unavailable.'},{status:[422,429,503].includes(response.status)?response.status:503});}catch{return Response.json({message:'Coverage checks are temporarily unavailable. Please try again or join the launch list.'},{status:503});}
  }
  if(path==='/join'&&req.method==='GET'){if(ctx&&ctx.waitUntil)ctx.waitUntil(backfillAdminWaitlist(env));return new Response(launchPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}})}
- if(path==='/__resend-test'&&req.method==='GET'){
-  if(url.searchParams.get('run')!=='1')return Response.json({secretAvailable:!!env.RESEND_API_KEY,instructions:'Add ?run=1 to send one diagnostic email. This does not touch the waitlist database.'});
-  const result=await notifyWaitlist(env,{name:'Resend Diagnostic Test',email:'info@wateroncall.ca',phone:'',postal:'',need:'Diagnostic only'});return Response.json({secretAvailable:!!env.RESEND_API_KEY,resend:result});
- }
  if(path==='/api/waitlist'&&req.method==='POST'){
   if(!env.PRODUCTION_DB)return Response.json({error:'Launch list is temporarily unavailable.'},{status:503});
   let body;try{body=await req.json()}catch{return Response.json({error:'Invalid submission.'},{status:400})}
@@ -45,3 +41,28 @@ export default {async fetch(req,env,ctx){const url=new URL(req.url);const path=u
  const res=await base.fetch(req,env,ctx);if(path==='/'){let html=await res.text();html=html.replaceAll('href="https://app.wateroncall.ca/"','href="/join"');const headers=new Headers(res.headers);headers.delete('content-length');return new Response(html,{status:res.status,headers});}
  return res;},async scheduled(_event,env,ctx){ctx.waitUntil(backfillAdminWaitlist(env))}};
 
+
+
+
+function secureResponse(response, request) {
+ const headers = new Headers(response.headers);
+ headers.set('x-content-type-options','nosniff');
+ headers.set('x-frame-options','DENY');
+ headers.set('referrer-policy','strict-origin-when-cross-origin');
+ headers.set('permissions-policy','camera=(), microphone=(), geolocation=()');
+ headers.set('content-security-policy',"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://app.wateroncall.ca; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:");
+ if(new URL(request.url).protocol==='https:') headers.set('strict-transport-security','max-age=15552000');
+ if(new URL(request.url).pathname.startsWith('/api/')) headers.set('cache-control','no-store');
+ return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+}
+export default {
+ async fetch(req,env,ctx){
+  const url=new URL(req.url);
+  if(url.protocol==='http:' && ['wateroncall.ca','www.wateroncall.ca'].includes(url.hostname)){
+   url.protocol='https:';
+   return secureResponse(new Response(null,{status:308,headers:{location:url.href}}),req);
+  }
+  return secureResponse(await application.fetch(req,env,ctx),req);
+ },
+ scheduled(event,env,ctx){return application.scheduled(event,env,ctx);}
+};
