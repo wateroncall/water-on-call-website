@@ -12,3 +12,21 @@ for(const path of ['/','/join','/haulers','/missing','/__resend-test?run=1']) {
  if(path.startsWith('/__resend'))assert.equal(r.status,404);
 }
 console.log('PASS public HTTPS, headers and diagnostic-route removal');
+
+
+for(const path of ['/','/join','/haulers','/cisterns','/pools','/faq','/check-availability','/demo/customer','/demo/hauler']) {
+ const r=await worker.fetch(new Request('https://www.wateroncall.ca'+path),{},{});
+ const html=await r.text();
+ assert.equal(r.status,200);
+ assert.equal((html.match(/gtag\/js\?id=G-V0DES2LJNP/g)||[]).length,1,`One tag on ${path}`);
+ assert.ok(html.indexOf('gtag/js?id=G-V0DES2LJNP')>html.indexOf('<head>'));
+ assert.ok(html.indexOf('gtag/js?id=G-V0DES2LJNP')<html.indexOf('</head>'));
+ const csp=r.headers.get('content-security-policy');
+ assert.ok(csp.includes("script-src 'self' 'unsafe-inline' https://*.googletagmanager.com"));
+ assert.ok(csp.includes("connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com"));
+}
+const preview=await worker.fetch(new Request('https://preview.example.com/'),{},{});
+assert.ok(!(await preview.text()).includes('gtag/js?id='));
+const api=await worker.fetch(new Request('https://www.wateroncall.ca/api/waitlist',{method:'POST',body:'{}'}),{},{});
+assert.ok(!(await api.text()).includes('gtag/js?id='));
+console.log('PASS single production Analytics tag on every public page and allowed by CSP');
