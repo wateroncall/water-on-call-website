@@ -13,10 +13,11 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: node --check src/index.js && node --check src/customer-overlay.js && node --check src/booking-tools.js
+      - run: node --check src/index.js && node --check src/customer-overlay.js && node --check src/booking-tools.js && node --check src/waitlist-confirmation.js
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: website-screenshots
           path: test-artifacts/*.png
+
