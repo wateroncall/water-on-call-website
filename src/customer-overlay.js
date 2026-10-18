@@ -44,16 +44,37 @@ const application = {async fetch(req,env,ctx){const url=new URL(req.url);const p
 
 
 
-function secureResponse(response, request) {
+const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-V0DES2LJNP"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-V0DES2LJNP', {
+ page_location: window.location.origin + window.location.pathname,
+ page_referrer: document.referrer ? document.referrer.split(/[?#]/)[0] : '',
+ allow_google_signals: false,
+ allow_ad_personalization_signals: false
+});
+</script>`;
+
+async function secureResponse(response, request) {
  const headers = new Headers(response.headers);
  headers.set('x-content-type-options','nosniff');
  headers.set('x-frame-options','DENY');
  headers.set('referrer-policy','strict-origin-when-cross-origin');
  headers.set('permissions-policy','camera=(), microphone=(), geolocation=()');
- headers.set('content-security-policy',"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://app.wateroncall.ca; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:");
+ headers.set('content-security-policy',"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://app.wateroncall.ca; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; font-src 'self' data:");
  if(new URL(request.url).protocol==='https:') headers.set('strict-transport-security','max-age=15552000');
  if(new URL(request.url).pathname.startsWith('/api/')) headers.set('cache-control','no-store');
- return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+ let body=response.body;
+ // Production public pages only; exclude API responses and preview hosts.
+ if(['wateroncall.ca','www.wateroncall.ca'].includes(new URL(request.url).hostname)
+    && headers.get('content-type')?.includes('text/html')) {
+  body=(await response.text()).replace('<head>','<head>'+googleAnalyticsTag);
+  headers.delete('content-length');
+  headers.delete('etag');
+ }
+ return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
 export default {
  async fetch(req,env,ctx){
@@ -66,3 +87,4 @@ export default {
  },
  scheduled(event,env,ctx){return application.scheduled(event,env,ctx);}
 };
+
