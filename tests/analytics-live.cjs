@@ -12,8 +12,18 @@ const { chromium } = require('playwright');
     await route.fulfill({response:upstream,headers:{...upstream.headers(),'content-security-policy':policy}});
    });
   }
+  if(process.env.GA_WAIT_FOR_DEPLOY==='1'){
+   let ready=false;
+   for(let i=0;i<36;i++){
+    const response=await page.request.get('https://www.wateroncall.ca/',{timeout:20000});
+    const sources=(response.headers()['content-security-policy']||'').split(';').find(d=>d.trim().startsWith('connect-src'))||'';
+    if(sources.split(' ').includes('https://analytics.google.com')){ready=true;break;}
+    await page.waitForTimeout(5000);
+   }
+   if(!ready)throw new Error('Public website has not deployed the collection-origin fix yet.');
+  }
   const failed=[],blocked=[],responses=[],collects=[];
-  page.on('console',m=>{if(/Content Security|Refused to|gtag|analytics/i.test(m.text()))blocked.push(m.text().replace(/https:\/\/[^\\s'\"]+/g,url=>url.split('?')[0]).slice(0,500));});
+  page.on('console',m=>{if(/Content Security|Refused to|gtag|analytics/i.test(m.text()))blocked.push(m.text().split('?')[0].slice(0,500));});
   page.on('pageerror',e=>blocked.push(e.message));
   page.on('requestfailed',r=>{if(/google|analytics|gtag/i.test(r.url()))failed.push({host:new URL(r.url()).host,error:r.failure()?.errorText});});
   page.on('response',async r=>{
