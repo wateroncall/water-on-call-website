@@ -13,3 +13,5 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: node tests/analytics-live.cjs
+        env:
+          GA_USE_CANDIDATE_CSP: '1'

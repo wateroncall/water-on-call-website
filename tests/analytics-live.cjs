@@ -3,8 +3,17 @@ const { chromium } = require('playwright');
  const browser=await chromium.launch({headless:true});
  try {
   const page=await browser.newPage();
+  if(process.env.GA_USE_CANDIDATE_CSP==='1'){
+   const {default:worker}=await import('../src/customer-overlay.js');
+   const candidate=await worker.fetch(new Request('https://www.wateroncall.ca/'),{},{});
+   const policy=candidate.headers.get('content-security-policy');
+   await page.route('https://www.wateroncall.ca/**',async route=>{
+    const upstream=await route.fetch();
+    await route.fulfill({response:upstream,headers:{...upstream.headers(),'content-security-policy':policy}});
+   });
+  }
   const failed=[],blocked=[],responses=[],collects=[];
-  page.on('console',m=>{if(/Content Security|Refused to|gtag|analytics/i.test(m.text()))blocked.push(m.text().slice(0,500));});
+  page.on('console',m=>{if(/Content Security|Refused to|gtag|analytics/i.test(m.text()))blocked.push(m.text().replace(/https:\/\/[^\\s'\"]+/g,url=>url.split('?')[0]).slice(0,500));});
   page.on('pageerror',e=>blocked.push(e.message));
   page.on('requestfailed',r=>{if(/google|analytics|gtag/i.test(r.url()))failed.push({host:new URL(r.url()).host,error:r.failure()?.errorText});});
   page.on('response',async r=>{
