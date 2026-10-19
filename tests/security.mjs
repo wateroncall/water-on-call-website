@@ -23,10 +23,14 @@ for(const path of ['/','/join','/haulers','/cisterns','/pools','/faq','/check-av
  assert.ok(html.indexOf('gtag/js?id=G-V0DES2LJNP')<html.indexOf('</head>'));
  const csp=r.headers.get('content-security-policy');
  assert.ok(csp.includes("script-src 'self' 'unsafe-inline' https://*.googletagmanager.com"));
- assert.ok(csp.includes("connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com"));
+ assert.ok(csp.includes("connect-src 'self' https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com"));
 }
 const preview=await worker.fetch(new Request('https://preview.example.com/'),{},{});
 assert.ok(!(await preview.text()).includes('gtag/js?id='));
 const api=await worker.fetch(new Request('https://www.wateroncall.ca/api/waitlist',{method:'POST',body:'{}'}),{},{});
 assert.ok(!(await api.text()).includes('gtag/js?id='));
 console.log('PASS single production Analytics tag on every public page and allowed by CSP');
+
+const analyticsPage=await worker.fetch(new Request('https://www.wateroncall.ca/'),{},{});
+const connectDirective=analyticsPage.headers.get('content-security-policy').split(';').find(d=>d.trim().startsWith('connect-src')).trim().split(' ').slice(1);
+assert.ok(connectDirective.includes('https://analytics.google.com'),'GA4 collection apex must be explicitly allowed; a subdomain wildcard does not match the apex.');
