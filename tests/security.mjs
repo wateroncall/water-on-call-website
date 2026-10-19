@@ -32,5 +32,5 @@ assert.ok(!(await api.text()).includes('gtag/js?id='));
 console.log('PASS single production Analytics tag on every public page and allowed by CSP');
 
 const analyticsPage=await worker.fetch(new Request('https://www.wateroncall.ca/'),{},{});
-const connectDirective=analyticsPage.headers.get('content-security-policy').split(';').find(d=>d.trim().startsWith('connect-src')).trim().split(/\\s+/).slice(1);
+const connectDirective=analyticsPage.headers.get('content-security-policy').split(';').find(d=>d.trim().startsWith('connect-src')).trim().split(' ').slice(1);
 assert.ok(connectDirective.includes('https://analytics.google.com'),'GA4 collection apex must be explicitly allowed; a subdomain wildcard does not match the apex.');
