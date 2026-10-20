@@ -1,10 +1,10 @@
 name: Live public website Analytics diagnosis
 on:
   pull_request:
-    paths: ['src/customer-overlay.js', 'tests/analytics-live.cjs', '.github/workflows/analytics-live.yml']
+    paths: ['src/customer-overlay.js', 'src/marketing.js', 'tests/analytics-live.cjs', '.github/workflows/analytics-live.yml']
   push:
     branches: [main]
-    paths: ['src/customer-overlay.js', 'tests/analytics-live.cjs', '.github/workflows/analytics-live.yml']
+    paths: ['src/customer-overlay.js', 'src/marketing.js', 'tests/analytics-live.cjs', '.github/workflows/analytics-live.yml']
 jobs:
   trace:
     runs-on: ubuntu-latest
@@ -19,3 +19,4 @@ jobs:
         env:
           GA_USE_CANDIDATE_CSP: ${{ github.event_name == 'pull_request' && '1' || '0' }}
           GA_WAIT_FOR_DEPLOY: ${{ github.event_name == 'push' && '1' || '0' }}
+
