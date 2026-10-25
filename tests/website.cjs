@@ -1,5 +1,5 @@
 const http=require('node:http');const fs=require('node:fs');const path=require('node:path');const {pathToFileURL}=require('node:url');const {chromium}=require('playwright');const assert=require('node:assert/strict');
-(async()=>{const root=path.resolve(__dirname,'..')+'/';fs.mkdirSync(root+'test-artifacts',{recursive:true});const tools=await import(pathToFileURL(root+'src/booking-tools.js'));const worker=(await import(pathToFileURL(root+'src/customer-overlay.js'))).default;
+(async()=>{const root=path.resolve(__dirname,'..')+'/';fs.mkdirSync(root+'test-artifacts',{recursive:true});const tools=await import(pathToFileURL(root+'src/booking-tools.js'));const workerEntry=process.env.WEBSITE_WORKER_ENTRY||'src/customer-overlay.js';const worker=(await import(pathToFileURL(path.resolve(root,workerEntry)))).default;
 assert.ok(Math.abs(tools.poolVolume({shape:'rectangle',unit:'metres',length:1,width:1,depth:1}).imperialGallons-219.969248299)<0.001);
 assert.ok(Math.abs(tools.poolVolume({shape:'circle',unit:'metres',length:2,depth:1}).litres-Math.PI*1000)<0.001);
 assert.throws(()=>tools.poolVolume({length:-1,width:2,depth:1}));
