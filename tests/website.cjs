@@ -7,6 +7,24 @@ const originalFetch=global.fetch;global.fetch=async(url,opts)=>String(url).inclu
 const server=http.createServer(async(req,res)=>{try{let chunks=[];for await(const chunk of req)chunks.push(chunk);const data=Buffer.concat(chunks);const request=new Request('http://127.0.0.1:4173'+req.url,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:data}: {})});const out=await worker.fetch(request,{},{});res.writeHead(out.status,Object.fromEntries(out.headers));res.end(Buffer.from(await out.arrayBuffer()));}catch(e){res.writeHead(500);res.end(String(e));}});await new Promise(r=>server.listen(4173,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});let errors=[];page.on('pageerror',e=>errors.push(e.message));
 for(const path of ['/','/haulers','/cisterns','/service-area','/pools','/faq','/check-availability','/join','/demo/customer','/demo/hauler']){const response=await page.goto('http://127.0.0.1:4173'+path);assert.equal(response.status(),200,path);assert.ok((await page.locator('h1').count())>0,path);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path);}
+await page.goto('http://127.0.0.1:4173/haulers');
+assert.equal(await page.getByRole('link',{name:'Water Haulers',exact:true}).isVisible(),true,'Water Haulers navigation is available on mobile');
+for(const [name,id] of [['New Customers','customers'],['Order Acceptance','orders'],['Delivery & Dispatch','dispatch'],['Delivery Mapping','mapping'],['Driver Scheduling','scheduling'],['Driver Timesheets','timesheets'],['Daily Truck Inspections','inspections'],['Payments & Payouts','payments']]) {
+ await page.getByRole('button',{name,exact:true}).click();
+ assert.equal(await page.locator('#hauler-panel-'+id).isVisible(),true,name);
+ assert.equal(await page.locator('[data-feature-panel]:visible').count(),1,'Only the selected feature is shown');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No overflow after selecting '+name);
+}
+const paymentText=await page.locator('#hauler-panel-payments').innerText();
+for(const value of ['$2,940','$705','$350','WOC-DEMO-101','Paid out','Pending','On hold','Sample data'])assert.ok(paymentText.includes(value),'Payments screen includes '+value);
+await page.getByRole('button',{name:'Enlarge sample screen',exact:true}).click();
+assert.equal(await page.getByRole('dialog').isVisible(),true);
+assert.ok((await page.getByRole('dialog').innerText()).includes('WOC-DEMO-103'),'Expanded payments screen retains its sample rows');
+await page.getByRole('button',{name:'Close',exact:true}).click();
+assert.equal(await page.getByRole('dialog').isVisible(),false);
+await page.getByRole('button',{name:'Driver Scheduling',exact:true}).click();
+assert.deepEqual(await page.locator('#hauler-panel-scheduling .hs-schedule>strong').allTextContents(),['Driver','Mon 26','Tue 27','Wed 28','Thu 29','Fri 30','Sat 31','Sun 1']);
+
 await page.goto('http://127.0.0.1:4173/pools');await page.locator('[name=length]').fill('32');await page.locator('[name=width]').fill('16');await page.locator('[name=depth]').fill('5');assert.match(await page.locator('#pool-result').innerText(),/imperial gallons/);assert.match(await page.locator('#pool-result').innerText(),/6 loads/);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/pool-mobile.png',fullPage:true});
 await page.goto('http://127.0.0.1:4173/check-availability');await page.locator('[name=address_line1]').fill('123 Test Road');await page.locator('[name=city]').fill('Pelham');await page.locator('[name=postal_code]').fill('L0S 1E0');await page.locator('#availability button').click();await page.getByText('Current coverage found').waitFor();assert.match(await page.locator('#coverage-result').innerText(),/250.00/);assert.equal(await page.locator('#confirm-address').isVisible(),false);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/coverage-mobile.png',fullPage:true});
 await page.goto('http://127.0.0.1:4173/');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/home-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:900});await page.goto('http://127.0.0.1:4173/haulers');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/haulers-desktop.png',fullPage:true});assert.deepEqual(errors,[]);console.log('PASS: calculator math, 10 routes, mobile layouts, quote form interaction, and browser script checks');await browser.close();await new Promise(r=>server.close(r));})().catch(e=>{console.error(e);process.exit(1)});
