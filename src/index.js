@@ -142,7 +142,7 @@ function home(){return shell('Bulk Water Delivery in Niagara | Water OnCall',`
   <details name="customer-info">
    <summary>See how ordering works</summary>
    <div class="customer-answer">
-    <p>Try a sample water request. The demo does not place an order or take a payment.</p>
+    <p>See the customer ordering screen with sample details. This preview does not place an order or take a payment.</p>
     <a href="/demo/customer">Open the customer demo →</a>
    </div>
   </details>
