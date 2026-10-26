@@ -8,6 +8,38 @@ const server=http.createServer(async(req,res)=>{try{let chunks=[];for await(cons
 const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});let errors=[];page.on('pageerror',e=>errors.push(e.message));
 for(const path of ['/','/haulers','/cisterns','/service-area','/pools','/faq','/check-availability','/join','/demo/customer','/demo/hauler']){const response=await page.goto('http://127.0.0.1:4173'+path);assert.equal(response.status(),200,path);assert.ok((await page.locator('h1').count())>0,path);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path);}
 await page.goto('http://127.0.0.1:4173/');
+const customerSteps=page.locator('#woc-step-demos');
+assert.match(await page.locator('h1').innerText(),/Order bulk water online/);
+assert.equal(await customerSteps.locator('details[data-demo]').count(),4);
+assert.equal(await customerSteps.locator('details[open]').count(),0,'Demos start collapsed');
+const demoPosts=[];
+const recordDemoRequest=request=>{if(request.method()==='POST')demoPosts.push(request.url());};
+page.on('request',recordDemoRequest);
+await customerSteps.locator('[data-demo="order"]>summary').click();
+await customerSteps.locator('[data-open-demo="offers"]').click();
+assert.equal(await customerSteps.locator('details[open]').count(),1,'One customer demo is open');
+const offersScreen=customerSteps.locator('[data-demo="offers"] .woc-demo-screen');
+assert.ok(!(await offersScreen.innerText()).includes('Water Haulage'),'Offers do not reveal hauler names');
+await customerSteps.locator('[data-review-offer="b"]').click();
+const review=customerSteps.locator('[data-choice-review]');
+assert.match(await review.innerText(),/Offer B/);
+assert.match(await review.innerText(),/\$175\.00/);
+assert.ok(!(await review.innerText()).includes('Example Bulk Water'),'The hauler is hidden before acceptance');
+await customerSteps.locator('[data-accept-sample]').click();
+const confirmation=customerSteps.locator('[data-choice-confirmed]');
+assert.match(await confirmation.innerText(),/Delivery booked/);
+assert.match(await confirmation.innerText(),/Example Bulk Water/);
+await customerSteps.locator('[data-open-demo="delivery"]').click();
+assert.match(await customerSteps.locator('[data-demo="delivery"] .woc-demo-screen').innerText(),/\$175\.00/);
+assert.match(await customerSteps.locator('[data-demo="delivery"] .woc-demo-screen').innerText(),/Delivered/);
+assert.deepEqual(demoPosts,[],'Customer demos never submit an order or payment');
+page.off('request',recordDemoRequest);
+await page.setViewportSize({width:320,height:800});
+for(const key of ['order','offers','choose','delivery']){
+ await customerSteps.locator('[data-demo="'+key+'"]>summary').click();
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Customer demo fits at 320px: '+key);
+}
+await page.setViewportSize({width:390,height:844});
 assert.equal(await page.getByRole('link',{name:'Water Haulers',exact:true}).isVisible(),true,'The homepage hauler link stays available on mobile');
 await page.getByRole('link',{name:'Water Haulers',exact:true}).click();
 assert.match(await page.locator('h1').innerText(),/More deliveries\.[\s\S]*Get paid faster\./);

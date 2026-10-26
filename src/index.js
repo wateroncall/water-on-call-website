@@ -1,3 +1,4 @@
+import {customerSteps} from './customer-steps.js';
 import {searchRoute, serviceAreaContent} from './marketing.js';
 import {haulerPage, haulerCss} from './haulers.js';
 import { availabilityPage, poolCalculator, faqBody } from './booking-tools.js';
@@ -79,49 +80,10 @@ const customerCss = `
 }
 `;
 
-function customerIcon(name){
- const paths={
-  water:'<path d="M12 3C9 7 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-4-8-7-12Z"/><path d="M8 15a4 4 0 0 0 4 4"/>',
-  confirm:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 11h18m-12 5 2 2 4-4"/>',
-  updates:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 11h8m-8 4h5"/>',
-  delivered:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2m10 0H9m10 0h2a1 1 0 0 0 1-1v-3.7a1 1 0 0 0-.2-.6l-3.5-4.3a1 1 0 0 0-.8-.4H14"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>'
- };
- return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[name]+'</svg>';
-}
-
-function customerCircle(){
- const steps=[['water','Request<br>water'],['confirm','Delivery<br>confirmed'],['updates','Get delivery<br>updates'],['delivered','Water<br>arrives']];
- return `<div class="customer-circle" role="img" aria-label="Four steps, clockwise from the top: 1. Request water. 2. Your delivery price and date are confirmed. 3. Get delivery updates. 4. Your water arrives.">
-  <svg class="customer-ring" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
-   <path d="M 64.340 58.535 A 196 196 0 0 1 335.660 58.535 L 318.273 119.622 L 262.293 135.042 A 90 90 0 0 0 137.707 135.042 L 124.645 78.465 Z"/>
-   <path d="M 341.465 64.340 A 196 196 0 0 1 341.465 335.660 L 280.378 318.273 L 264.958 262.293 A 90 90 0 0 0 264.958 137.707 L 321.535 124.645 Z"/>
-   <path d="M 335.660 341.465 A 196 196 0 0 1 64.340 341.465 L 81.727 280.378 L 137.707 264.958 A 90 90 0 0 0 262.293 264.958 L 275.355 321.535 Z"/>
-   <path d="M 58.535 335.660 A 196 196 0 0 1 58.535 64.340 L 119.622 81.727 L 135.042 137.707 A 90 90 0 0 0 135.042 262.293 L 78.465 275.355 Z"/>
-  </svg>
-  <div class="customer-hub"><span>Water</span><strong>OnCall</strong></div>
-  ${steps.map(([icon,title],i)=>`<div class="customer-flow-step"><span class="customer-flow-icon">${customerIcon(icon)}<b>${i+1}</b></span><h3>${title}</h3></div>`).join('')}
- </div>`;
-}
-
 const shell=(title,body,customer=false)=>`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><meta name="description" content="Water OnCall connects customers with approved bulk water haulers. Launching in Niagara, Ontario."><style>${css}${flowCss}${haulerCss}${customer?customerCss:''}</style></head><body${customer?' class="customer-page"':''}><header><div class="wrap nav"><a class="brand" href="/"><b>Water</b> OnCall</a><nav class="links" aria-label="Main navigation">${customer?'':'<a href="/check-availability">Coverage & pricing</a><a href="/faq">Questions</a>'}<a class="hauler-nav" href="/haulers">Water Haulers</a><a class="btn" data-lead-cta="launch_list" href="/join">${customer?'Get launch updates':'Join prelaunch list'}</a></nav></div></header>${body}<footer class="footer"><div class="wrap">© 2026 Water OnCall · Niagara, Ontario · <a href="/service-area">Niagara coverage</a> · <a href="/cisterns">Cistern water</a> · <a href="/pools">Pool water</a> · <a href="/faq">FAQ</a> · <a href="mailto:info@wateroncall.ca">info@wateroncall.ca</a></div></footer><aside class="mobile-cta" aria-label="Quick actions"><a class="btn" href="/check-availability">Check your address</a><a class="btn alt" href="/join">Launch updates</a></aside></body></html>`;
 function home(){return shell('Bulk Water Delivery in Niagara | Water OnCall',`
 <main>
- <section class="wrap customer-hero" aria-labelledby="customer-title">
-  <div class="customer-intro">
-   <p class="customer-eyebrow">Launching soon in Niagara</p>
-   <h1 id="customer-title">Water delivery.<br><span>Made simple.</span></h1>
-   <p>Water OnCall connects you with local water haulers for cisterns, pools and hot tubs.</p>
-   <div class="customer-actions">
-    <a class="btn" data-lead-cta="coverage" href="/check-availability">Check your address</a>
-    <a class="btn alt" data-lead-cta="launch_list" href="/join">Launch updates</a>
-   </div>
-   <p class="customer-launch-note">Join free. We’ll email you when ordering opens.</p>
-  </div>
-  <div class="customer-journey" aria-label="How Water OnCall works for customers">
-   ${customerCircle()}
-   <p class="customer-flow-caption">Your water request. Local haulers. One place to book.</p>
-  </div>
- </section>
+ <div class="wrap" style="max-width:824px;padding-top:28px;padding-bottom:28px">${customerSteps()}</div>
  <section class="customer-help" aria-label="Customer booking details">
   <details name="customer-info">
    <summary>Your hauler, or an available one</summary>
@@ -137,13 +99,6 @@ function home(){return shell('Bulk Water Delivery in Niagara | Water OnCall',`
     <p><strong>Preferred hauler:</strong> With an approved total, your card is charged when your hauler accepts your request.</p>
     <p><strong>First available:</strong> Your card is charged only when you accept an offer.</p>
     <p><strong>Recurring deliveries:</strong> Your card is charged the day before each scheduled delivery.</p>
-   </div>
-  </details>
-  <details name="customer-info">
-   <summary>See how ordering works</summary>
-   <div class="customer-answer">
-    <p>See the customer ordering screen with sample details. This preview does not place an order or take a payment.</p>
-    <a href="/demo/customer">Open the customer demo →</a>
    </div>
   </details>
  </section>
