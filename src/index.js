@@ -43,6 +43,7 @@ const customerCss = `
 .customer-flow-step h3{font-size:clamp(12px,3.5cqw,16px);line-height:1.2;font-weight:750;letter-spacing:-.15px;margin:0}
 .customer-flow-caption{font-size:14px;color:#526b83;line-height:1.5;margin:18px 0 0;text-align:center}
 .customer-help{max-width:780px;margin:0 auto 42px;padding:10px 24px;background:#fff;border:1px solid #e2eaf3;border-radius:18px}
+.customer-help>h2{color:#132f4b;font-size:24px;font-weight:750;line-height:1.25;letter-spacing:-.4px;margin:20px 0 8px}
 .customer-help details+details{border-top:1px solid #e2eaf3}
 .customer-help summary{display:flex;align-items:center;justify-content:space-between;gap:18px;list-style:none;cursor:pointer;min-height:64px;padding:16px 0;font-size:16px;font-weight:750;line-height:1.4}
 .customer-help summary::-webkit-details-marker{display:none}
@@ -84,21 +85,38 @@ const shell=(title,body,customer=false)=>`<!doctype html><html lang="en"><head><
 function home(){return shell('Bulk Water Delivery in Niagara | Water OnCall',`
 <main>
  <div class="wrap" style="max-width:824px;padding-top:28px;padding-bottom:28px">${customerSteps()}</div>
- <section class="customer-help" aria-label="Customer booking details">
+ <section class="customer-help" id="customer-faq" aria-labelledby="customer-faq-title">
+  <h2 id="customer-faq-title">Frequently asked questions</h2>
   <details name="customer-info">
-   <summary>Your hauler, or an available one</summary>
+   <summary>Do you deliver to my area?</summary>
    <div class="customer-answer">
-    <p><strong>Have a preferred hauler?</strong> Send your request straight to them.</p>
-    <p><strong>Need to find one?</strong> Available local haulers send a price and delivery date. Accept an offer or wait for more. Your choice.</p>
+    <p>Water OnCall is preparing to launch in Niagara. Coverage depends on your address and available local water haulers. <a href="/check-availability">Check your address</a> for a preliminary coverage result.</p>
    </div>
   </details>
   <details name="customer-info">
-   <summary>Clear pricing. Payment before delivery.</summary>
+   <summary>Can I choose my usual water hauler?</summary>
    <div class="customer-answer">
-    <p>Review the price before committing. Water OnCall handles your payment.</p>
+    <p>Yes, if they’re approved on Water OnCall. Save them as your preferred hauler and send your request straight to them. You can also choose to get offers from available local water haulers.</p>
+   </div>
+  </details>
+  <details name="customer-info">
+   <summary>When is my credit card charged?</summary>
+   <div class="customer-answer">
+    <p><strong>First available:</strong> Your card is charged when you accept an offer.</p>
     <p><strong>Preferred hauler:</strong> With an approved total, your card is charged when your hauler accepts your request.</p>
-    <p><strong>First available:</strong> Your card is charged only when you accept an offer.</p>
-    <p><strong>Recurring deliveries:</strong> Your card is charged the day before each scheduled delivery.</p>
+    <p>Payment is collected before delivery.</p>
+   </div>
+  </details>
+  <details name="customer-info">
+   <summary>How much bulk water should I order?</summary>
+   <div class="customer-answer">
+    <p>For cisterns, order the amount needed to top up the tank. For pool fills and top-ups, <a href="/pools">use our pool calculator</a> to estimate the water needed. Delivery amounts are shown in imperial gallons.</p>
+   </div>
+  </details>
+  <details name="customer-info">
+   <summary>Can I set up recurring deliveries?</summary>
+   <div class="customer-answer">
+    <p>Yes. Set up recurring cistern deliveries with a repeat schedule and end date when ordering. Once the arrangement is accepted, your saved card is charged the day before each scheduled delivery.</p>
    </div>
   </details>
  </section>
