@@ -2,7 +2,93 @@ import {enhanceSearchMarkup, googleAnalyticsTag} from './marketing.js';
 import base from './index.js';
 import {prepareConfirmations, confirmationInsert, sendConfirmations} from './waitlist-confirmation.js';
 
-const launchPage=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join the Water OnCall Launch List</title><style>*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#102b46;background:#f6faff}.wrap{max-width:760px;margin:0 auto;padding:50px 22px}.brand{font-size:25px;font-weight:900;text-decoration:none;color:#102b46}.brand b{color:#0877f9}.card{margin-top:28px;background:#fff;border:1px solid #dce8f3;border-radius:20px;padding:30px;box-shadow:0 12px 35px #06325e0c}h1{font-size:42px;line-height:1.05;margin:8px 0 12px}p{color:#60768c;line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}label{font-weight:800;font-size:13px;display:block;margin-bottom:6px}input,select{width:100%;height:48px;border:1px solid #bed0e1;border-radius:10px;padding:12px;font:inherit;background:#fff}.btn{width:100%;border:0;border-radius:11px;background:#0877f9;color:#fff;padding:14px;font-weight:850;font-size:16px;cursor:pointer;margin-top:18px}.muted{font-size:12px;color:#60768c}.msg{margin-top:15px;padding:13px;border-radius:10px;display:none}.ok{display:block;background:#eaf8f1;color:#09633f}.err{display:block;background:#fff0f0;color:#9b2222}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}h1{font-size:36px}}</style></head><body><main class="wrap"><a class="brand" href="/"><b>Water</b> OnCall</a><section class="card"><div class="muted" style="font-weight:850;color:#0877f9">NIAGARA PRE-LAUNCH</div><h1>Be first to know when Water OnCall launches.</h1><p>Get Niagara launch updates. We’ll email you when customer ordering opens in your area. Joining is free and does not place an order or take a payment.</p><form id="f" name="launch-list"><div class="grid"><div class="full"><label for="signup-name">Name</label><input id="signup-name" name="name" required autocomplete="name"></div><div><label for="signup-email">Email</label><input id="signup-email" name="email" type="email" required autocomplete="email"></div><div><label for="signup-phone">Mobile phone <span class="muted">(optional)</span></label><input id="signup-phone" name="phone" autocomplete="tel"></div><div><label for="signup-postal">Postal code</label><input id="signup-postal" name="postal_code" autocomplete="postal-code" placeholder="L0R 1S0"></div><div><label for="signup-need">What do you need bulk water for?</label><select id="signup-need" name="water_need"><option value="Cistern">Cistern</option><option value="Pool">Pool</option><option value="Hot tub">Hot tub</option><option value="Other">Other</option><option value="Not sure">Not sure yet</option></select></div></div><button class="btn" type="submit">Join the Water OnCall Launch List</button><p class="muted">By joining, you agree to receive Water OnCall launch and service updates. To leave the list, reply to our email or contact info@wateroncall.ca.</p><div id="msg" class="msg" role="status" aria-live="polite" tabindex="-1"></div></form><p class="muted">Need help? <a href="mailto:info@wateroncall.ca">Contact Us</a> · <a href="/">Back to Water OnCall</a></p></section></main><script>document.querySelector('#f').addEventListener('focusin',()=>{if(typeof window.gtag==='function')window.gtag('event','lead_form_start',{form_name:'launch_list'})},{once:true});document.querySelector('#f').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button'),m=document.querySelector('#msg');b.disabled=true;b.textContent='Joining…';m.className='msg';try{const data=Object.fromEntries(new FormData(f));const r=await fetch('/api/waitlist',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw new Error(j.error||'Unable to join right now.');m.textContent=j.duplicate?'Your email is already on the Water OnCall launch list. We’ll let you know when ordering opens in your area.':'You’re on the list! Look for your confirmation email, including in your spam folder. We’ll email you when ordering opens in your area.';m.className='msg ok';m.focus();if(!j.duplicate){if(typeof window.gtag==='function')window.gtag('event','generate_lead',{form_name:'launch_list',lead_type:'customer'});f.reset()}}catch(x){m.textContent=x.message;m.className='msg err'}finally{b.disabled=false;b.textContent='Join the Water OnCall Launch List'}});</script></body></html>`;
+const launchPage=`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Join the Water OnCall Launch List</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#132f4b;background:#f4f8ff}
+.wrap{max-width:560px;margin:0 auto;padding:24px 18px 32px}
+.brand{display:inline-block;font-size:25px;line-height:1.2;letter-spacing:-.8px;font-weight:800;text-decoration:none;color:#132f4b}
+.brand b{color:#087cff}
+.card{margin-top:18px;background:#fff;border:1px solid #d9e5f2;border-radius:17px;padding:20px}
+.eyebrow{margin:0 0 8px;color:#087cff;font-size:11px;line-height:1.3;font-weight:750;letter-spacing:1px}
+h1{font-size:32px;line-height:1.18;letter-spacing:-.9px;font-weight:750;margin:0 0 8px}
+.intro{color:#60758d;font-size:14px;line-height:1.5;margin:0 0 18px}
+.grid{display:grid;gap:12px}
+.grid>div,.phone-postal>div{min-width:0}
+.phone-postal{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}
+label{font-weight:650;font-size:13px;line-height:1.35;display:block;margin-bottom:5px}
+input,select{width:100%;min-width:0;height:44px;border:1px solid #bdcfe2;border-radius:9px;padding:0 11px;font:inherit;font-size:16px;color:#132f4b;background:#fff}
+input::placeholder{color:#8393a5;opacity:1}
+.btn{width:100%;min-height:46px;border:0;border-radius:9px;background:#087cff;color:#fff;padding:10px 12px;font-family:inherit;font-weight:700;font-size:16px;line-height:1.4;cursor:pointer;margin-top:16px}
+.btn:hover{background:#006ce5}
+.btn:disabled{opacity:.65;cursor:wait}
+.muted{font-size:12px;color:#60758d;line-height:1.5}
+label .muted{font-weight:400}
+.reassurance{text-align:center;margin:12px 0 0}
+.consent{margin:12px 0 0}
+.help{text-align:center;margin:12px 0 0}
+.help a{color:#0877f9}
+.msg{margin-top:12px;padding:12px;border-radius:9px;display:none}
+.ok{display:block;background:#eaf8f1;color:#09633f}
+.err{display:block;background:#fff0f0;color:#9b2222}
+@media(max-width:650px){h1{font-size:27px}}
+@media(max-width:360px){.wrap{padding-right:12px;padding-left:12px}.card{padding:16px}.phone-postal{gap:9px}label{font-size:12px}input,select{padding-right:8px;padding-left:8px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<a class="brand" href="/"><b>Water</b> OnCall</a>
+<section class="card" aria-labelledby="launch-heading">
+<p class="eyebrow">NIAGARA PRE-LAUNCH</p>
+<h1 id="launch-heading">Bulk water is coming.</h1>
+<p class="intro">Get an email when online ordering opens in your area.</p>
+<form id="f" name="launch-list">
+<div class="grid">
+<div>
+<label for="signup-name">Name</label>
+<input id="signup-name" name="name" required autocomplete="name" placeholder="Your name">
+</div>
+<div>
+<label for="signup-email">Email</label>
+<input id="signup-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+</div>
+<div class="phone-postal">
+<div>
+<label for="signup-phone">Mobile <span class="muted">(optional)</span></label>
+<input id="signup-phone" name="phone" type="tel" autocomplete="tel" placeholder="905 555 0123">
+</div>
+<div>
+<label for="signup-postal">Postal code</label>
+<input id="signup-postal" name="postal_code" autocomplete="postal-code" placeholder="L0R 1S0" maxlength="7">
+</div>
+</div>
+<div>
+<label for="signup-need">Water for</label>
+<select id="signup-need" name="water_need">
+<option value="Cistern">Cistern</option>
+<option value="Pool">Pool</option>
+<option value="Hot tub">Hot tub</option>
+<option value="Other">Other</option>
+<option value="Not sure">Not sure yet</option>
+</select>
+</div>
+</div>
+<button class="btn" type="submit">Join launch list</button>
+<p class="muted reassurance">Free to join. No order or payment.</p>
+<p class="muted consent">By joining, you agree to receive Water OnCall launch and service updates. To leave the list, reply to our email or contact info@wateroncall.ca.</p>
+<div id="msg" class="msg" role="status" aria-live="polite" tabindex="-1"></div>
+</form>
+<p class="muted help"><a href="mailto:info@wateroncall.ca">Contact Us</a> · <a href="/">Back to Water OnCall</a></p>
+</section>
+</main>
+<script>document.querySelector('#f').addEventListener('focusin',()=>{if(typeof window.gtag==='function')window.gtag('event','lead_form_start',{form_name:'launch_list'})},{once:true});document.querySelector('#f').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button'),m=document.querySelector('#msg');b.disabled=true;b.textContent='Joining…';m.className='msg';try{const data=Object.fromEntries(new FormData(f));const r=await fetch('/api/waitlist',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw new Error(j.error||'Unable to join right now.');m.textContent=j.duplicate?'Your email is already on the Water OnCall launch list. We’ll let you know when ordering opens in your area.':'You’re on the list! Look for your confirmation email, including in your spam folder. We’ll email you when ordering opens in your area.';m.className='msg ok';m.focus();if(!j.duplicate){if(typeof window.gtag==='function')window.gtag('event','generate_lead',{form_name:'launch_list',lead_type:'customer'});f.reset()}}catch(x){m.textContent=x.message;m.className='msg err'}finally{b.disabled=false;b.textContent='Join launch list'}});</script>
+</body>
+</html>`;
 
 const ADMIN_WAITLIST_URL='https://wateroncall-backend-production-cov9zr.laravel.cloud/api/v1/waitlist';
 async function syncAdminWaitlist(lead){
