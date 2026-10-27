@@ -153,12 +153,12 @@ export function customerSteps() {
               <h3>Your delivery offers</h3>
               <p class="woc-demo-note">2,000 Imp gal · Sample totals in CAD</p>
               <div class="woc-offer-row">
-                <div class="woc-offer-top"><span class="woc-offer-id">Offer A</span><span class="woc-offer-price">$180.00</span></div>
+                <div class="woc-offer-top"><span class="woc-offer-id">Offer A</span><span class="woc-offer-price">Price</span></div>
                 <div class="woc-offer-date"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>Next business day</div>
                 <button type="button" class="woc-action " data-review-offer="a">Review this offer</button>
               </div>
               <div class="woc-offer-row">
-                <div class="woc-offer-top"><span class="woc-offer-id">Offer B</span><span class="woc-offer-price">$175.00</span></div>
+                <div class="woc-offer-top"><span class="woc-offer-id">Offer B</span><span class="woc-offer-price">Price</span></div>
                 <div class="woc-offer-date"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>In 2 business days</div>
                 <button type="button" class="woc-action woc-action-secondary " data-review-offer="b">Review this offer</button>
               </div>
@@ -190,7 +190,7 @@ export function customerSteps() {
                   <div class="woc-field"><dt>Delivery date</dt><dd data-choice-date>Next business day</dd></div>
                   <div class="woc-field"><dt>Payment method</dt><dd>Sample card ···· 4242</dd></div>
                 </dl>
-                <div class="woc-total"><span>Total (CAD)</span><span class="woc-total-value" data-choice-total>$180.00</span></div>
+                <div class="woc-total"><span>Total (CAD)</span><span class="woc-total-value" data-choice-total>Price</span></div>
                 <button type="button" class="woc-action " data-accept-sample>Accept sample offer</button>
                 <p class="woc-demo-note">Demo only · No payment is taken.</p>
               </div>
@@ -200,7 +200,7 @@ export function customerSteps() {
                 <dl class="woc-fields">
                   <div class="woc-field"><dt>Your water hauler</dt><dd data-choice-hauler>Sample Water Haulage</dd></div>
                   <div class="woc-field"><dt>Delivery date</dt><dd data-choice-date>Next business day</dd></div>
-                  <div class="woc-field"><dt>Sample payment confirmed</dt><dd data-choice-total>$180.00</dd></div>
+                  <div class="woc-field"><dt>Sample payment confirmed</dt><dd data-choice-total>Price</dd></div>
                 </dl>
                 <button type="button" class="woc-action " data-open-demo="delivery">View sample delivery</button>
               </div>
@@ -228,7 +228,7 @@ export function customerSteps() {
                 <div class="woc-field"><dt>Water delivered</dt><dd>2,000 Imp gal</dd></div>
                 <div class="woc-field"><dt>Your water hauler</dt><dd data-choice-hauler>Sample Water Haulage</dd></div>
                 <div class="woc-field"><dt>Delivery address</dt><dd>123 Sample Lane, Niagara Region</dd></div>
-                <div class="woc-field"><dt>Sample total paid (CAD)</dt><dd data-choice-total>$180.00</dd></div>
+                <div class="woc-field"><dt>Sample total paid (CAD)</dt><dd data-choice-total>Price</dd></div>
               </dl>
               <ol class="woc-delivery-stages" aria-label="Sample delivery updates">
                 <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>Delivery confirmed</li>
@@ -250,8 +250,8 @@ export function customerSteps() {
   const review = root.querySelector('[data-choice-review]');
   const confirmed = root.querySelector('[data-choice-confirmed]');
   const offers = {
-    a: { label: 'Offer A', date: 'Next business day', total: '$180.00', hauler: 'Sample Water Haulage' },
-    b: { label: 'Offer B', date: 'In 2 business days', total: '$175.00', hauler: 'Example Bulk Water' }
+    a: { label: 'Offer A', date: 'Next business day', total: 'Price', hauler: 'Sample Water Haulage' },
+    b: { label: 'Offer B', date: 'In 2 business days', total: 'Price', hauler: 'Example Bulk Water' }
   };
   function openDemo(key) {
     const target = demos.find(demo => demo.dataset.demo === key);
