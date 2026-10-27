@@ -95,6 +95,50 @@ await page.setViewportSize({width:390,height:844});
 
 await page.goto('http://127.0.0.1:4173/pools');await page.locator('[name=length]').fill('32');await page.locator('[name=width]').fill('16');await page.locator('[name=depth]').fill('5');assert.match(await page.locator('#pool-result').innerText(),/imperial gallons/);assert.match(await page.locator('#pool-result').innerText(),/6 loads/);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/pool-mobile.png',fullPage:true});
 await page.goto('http://127.0.0.1:4173/check-availability');await page.locator('[name=address_line1]').fill('123 Test Road');await page.locator('[name=city]').fill('Pelham');await page.locator('[name=postal_code]').fill('L0S 1E0');await page.locator('#availability button').click();await page.getByText('Current coverage found').waitFor();assert.match(await page.locator('#coverage-result').innerText(),/250.00/);assert.equal(await page.locator('#confirm-address').isVisible(),false);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/coverage-mobile.png',fullPage:true});
-await page.goto('http://127.0.0.1:4173/');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/home-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:900});await page.goto('http://127.0.0.1:4173/haulers');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/haulers-desktop.png',fullPage:true});assert.deepEqual(errors,[]);console.log('PASS: calculator math, 10 routes, mobile layouts, quote form interaction, and browser script checks');await browser.close();await new Promise(r=>server.close(r));})().catch(e=>{console.error(e);process.exit(1)});
+await page.goto('http://127.0.0.1:4173/');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/home-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:900});await page.goto('http://127.0.0.1:4173/haulers');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/haulers-desktop.png',fullPage:true});
+await page.setViewportSize({width:320,height:800});
+await page.addInitScript(()=>{
+ window.gtag=(_kind,event,details)=>{
+  const events=JSON.parse(sessionStorage.getItem('signup-test-events')||'[]');
+  events.push(event);
+  sessionStorage.setItem('signup-test-events',JSON.stringify(events));
+  if(typeof details?.event_callback==='function')details.event_callback();
+ };
+});
+let signupOutcome='new';
+await page.route('**/api/waitlist',async route=>{
+ const duplicate=signupOutcome==='duplicate',failed=signupOutcome==='error';
+ const headers={'content-type':'application/json'};
+ if(!duplicate&&!failed)headers['set-cookie']='woc_launch_signup=confirmed; Path=/join; HttpOnly; SameSite=Lax';
+ await route.fulfill({status:failed?503:200,headers,body:JSON.stringify(failed?{error:'Please try again.'}:duplicate?{ok:true,duplicate:true}:{ok:true})});
+});
+const signupEvents=()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('signup-test-events')||'[]').filter(name=>name==='generate_lead').length);
+await page.context().clearCookies();
+await page.goto('http://127.0.0.1:4173/join/thanks');
+assert.equal(new URL(page.url()).pathname,'/join','A direct confirmation-page visit returns to the signup form');
+for(const outcome of ['new','duplicate','error']){
+ signupOutcome=outcome;
+ await page.context().clearCookies();
+ await page.goto('http://127.0.0.1:4173/join');
+ await page.evaluate(()=>sessionStorage.removeItem('signup-test-events'));
+ await page.locator('[name="name"]').fill('Test Subscriber');
+ await page.locator('[name="email"]').fill('signup-check@example.test');
+ await page.getByRole('button',{name:'Join launch list',exact:true}).click();
+ if(outcome==='new'){
+  await page.waitForURL('**/join/thanks');
+  assert.match(await page.locator('h1').innerText(),/You're on the list/);
+  assert.equal(await signupEvents(),1,'A saved new signup records one lead and opens the completion page');
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Confirmation page fits on mobile');
+  await page.screenshot({path:root+'test-artifacts/signup-confirmation-mobile.png',fullPage:true});
+ }else{
+  await page.locator(outcome==='duplicate'?'#msg.ok':'#msg.err').waitFor();
+  assert.equal(new URL(page.url()).pathname,'/join','Duplicates and failures stay on the form');
+  assert.equal(await signupEvents(),0,'Duplicates and failures do not record new leads');
+  assert.equal(await page.getByRole('button',{name:'Join launch list',exact:true}).isEnabled(),true);
+  await page.goto('http://127.0.0.1:4173/join/thanks');
+  assert.equal(new URL(page.url()).pathname,'/join','Duplicates and failures cannot open the completion page');
+ }
+}
+assert.deepEqual(errors,[]);console.log('PASS: calculator math, 10 routes, mobile layouts, quote form interaction, and new/duplicate/failed signup conversion checks');await browser.close();await new Promise(r=>server.close(r));})().catch(e=>{console.error(e);process.exit(1)});
 
 

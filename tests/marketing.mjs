@@ -40,17 +40,25 @@ assert.equal(untrusted.campaign_content, undefined);
 // Execute the actual signup client with local form, network and Analytics
 // stubs. A lead is counted only after a new signup is confirmed by the server.
 const join = await (await worker.fetch(new Request(origin+'/join'), {}, {})).text();
-const scripts = Array.from(join.matchAll(/<script>([\s\S]*?)<\/script>/g), match => match[1]);
-const signupScript = scripts.find(script => script.includes("document.querySelector('#f').addEventListener"));
+const scripts = Array.from(join.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g), match => match[1]);
+const signupScript = scripts.find(script => script.includes("signupForm.addEventListener"));
 assert.ok(signupScript);
 for (const [reply, status, expected] of [[{ok:true}, 200, 1], [{ok:true,duplicate:true}, 200, 0], [{error:'Try again'}, 500, 0]]) {
-  const events = [], handlers = {}, message = {focus(){}}, button = {}, form = {querySelector(){return button;},reset(){}};
-  const sandbox = {window:{gtag:(...args)=>events.push(args)}, document:{querySelector:selector=>selector==='#f'?{addEventListener:(name,callback)=>{handlers[name]=callback;}}:message},
+  const events = [], navigations = [], timers = new Map(), handlers = {}, message = {focus(){}}, button = {}, form = {querySelector(){return button;},reset(){}};
+  const sandbox = {window:{
+      location:{assign:url=>navigations.push(url)},
+      setTimeout:callback=>{const id=timers.size+1;timers.set(id,callback);return id;},
+      clearTimeout:id=>timers.delete(id),
+      gtag:(...args)=>{events.push(args);args[2]?.event_callback?.();}
+    }, document:{querySelector:selector=>selector==='#f'?{addEventListener:(name,callback)=>{handlers[name]=callback;}}:message},
     FormData:class { *[Symbol.iterator](){yield ['name','Private Name'];yield ['email','private@example.test'];yield ['phone','905-555-0100'];} },
     fetch:async()=>({ok:status<400,json:async()=>reply})};
   vm.runInNewContext(signupScript, sandbox);
   await handlers.submit({preventDefault(){},currentTarget:form});
   assert.equal(events.filter(event=>event[1]==='generate_lead').length, expected);
+  assert.deepEqual(navigations,expected?['/join/thanks']:[],'Only saved new signups navigate to the completion goal');
+  for(const callback of timers.values())callback();
+  assert.equal(navigations.length,expected,'Analytics callbacks and fallback cannot navigate twice');
   assert.ok(!JSON.stringify(events).includes('Private') && !JSON.stringify(events).includes('private@example.test') && !JSON.stringify(events).includes('905-555'));
 }
 console.log('PASS search metadata, sitemap, demo indexing, safe campaign attribution and confirmed-new-signup lead events');

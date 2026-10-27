@@ -86,9 +86,80 @@ label .muted{font-weight:400}
 <p class="muted help"><a href="mailto:info@wateroncall.ca">Contact Us</a> · <a href="/">Back to Water OnCall</a></p>
 </section>
 </main>
-<script>document.querySelector('#f').addEventListener('focusin',()=>{if(typeof window.gtag==='function')window.gtag('event','lead_form_start',{form_name:'launch_list'})},{once:true});document.querySelector('#f').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button'),m=document.querySelector('#msg');b.disabled=true;b.textContent='Joining…';m.className='msg';try{const data=Object.fromEntries(new FormData(f));const r=await fetch('/api/waitlist',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw new Error(j.error||'Unable to join right now.');m.textContent=j.duplicate?'Your email is already on the Water OnCall launch list. We’ll let you know when ordering opens in your area.':'You’re on the list! Look for your confirmation email, including in your spam folder. We’ll email you when ordering opens in your area.';m.className='msg ok';m.focus();if(!j.duplicate){if(typeof window.gtag==='function')window.gtag('event','generate_lead',{form_name:'launch_list',lead_type:'customer'});f.reset()}}catch(x){m.textContent=x.message;m.className='msg err'}finally{b.disabled=false;b.textContent='Join launch list'}});</script>
+<script id="launch-form">
+const signupForm = document.querySelector('#f');
+signupForm.addEventListener('focusin', () => {
+  if (typeof window.gtag === 'function') window.gtag('event', 'lead_form_start', {form_name:'launch_list'});
+}, {once:true});
+
+function showSignupConfirmation() {
+  let navigating = false;
+  let fallback;
+  const navigate = () => {
+    if (navigating) return;
+    navigating = true;
+    window.clearTimeout(fallback);
+    window.location.assign('/join/thanks');
+  };
+  fallback = window.setTimeout(navigate, 1200);
+  try {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'generate_lead', {
+        form_name:'launch_list', lead_type:'customer',
+        event_callback:navigate, event_timeout:1000
+      });
+    } else {
+      navigate();
+    }
+  } catch {
+    navigate();
+  }
+}
+
+signupForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.currentTarget, b = f.querySelector('button'), m = document.querySelector('#msg');
+  let savedNewSignup = false;
+  b.disabled = true;
+  b.textContent = 'Joining…';
+  m.className = 'msg';
+  try {
+    const data = Object.fromEntries(new FormData(f));
+    const r = await fetch('/api/waitlist', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(data)});
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Unable to join right now.');
+    m.textContent = j.duplicate
+      ? 'Your email is already on the Water OnCall launch list. We’ll let you know when ordering opens in your area.'
+      : 'You’re on the list! Look for your confirmation email, including in your spam folder. We’ll email you when ordering opens in your area.';
+    m.className = 'msg ok';
+    m.focus();
+    if (!j.duplicate) {
+      savedNewSignup = true;
+      f.reset();
+      b.textContent = 'Joined';
+      showSignupConfirmation();
+    }
+  } catch (x) {
+    m.textContent = x.message;
+    m.className = 'msg err';
+  } finally {
+    if (!savedNewSignup) {
+      b.disabled = false;
+      b.textContent = 'Join launch list';
+    }
+  }
+});
+</script>
 </body>
 </html>`;
+
+
+const signupConfirmationPage = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>You're on the launch list | Water OnCall</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f4f8ff;color:#132f4b;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}.wrap{max-width:560px;margin:0 auto;padding:24px 18px}.brand{font-size:25px;font-weight:800;text-decoration:none;color:#132f4b;letter-spacing:-.8px}.brand b{color:#087cff}.card{margin-top:18px;background:#fff;border:1px solid #d9e5f2;border-radius:17px;padding:24px}.check{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#eaf8f1;color:#09633f;font-size:27px;margin-bottom:18px}h1{font-size:30px;line-height:1.18;margin:0 0 14px;letter-spacing:-.8px}p{font-size:15px;line-height:1.6;color:#60758d;margin:0 0 16px}.note{font-size:13px}.btn{display:inline-block;background:#087cff;color:#fff;padding:12px 16px;border-radius:9px;font-size:15px;font-weight:700;text-decoration:none}.help{font-size:13px;margin-top:18px;margin-bottom:0}.help a{color:#0877f9}</style></head>
+<body><main class="wrap"><a class="brand" href="/"><b>Water</b> OnCall</a><section class="card" aria-labelledby="confirmation-title"><div class="check" aria-hidden="true">✓</div><h1 id="confirmation-title">You're on the list.</h1><p>We'll email you when online ordering opens in your area.</p><p>Look for your confirmation email, including in your spam folder.</p><p class="note">Joining the launch list does not place an order or take a payment.</p><a class="btn" href="/">Back to Water OnCall</a><p class="help">Questions? <a href="mailto:info@wateroncall.ca">Contact us</a></p></section></main></body></html>`;
+
+const signupReceiptCookie = 'woc_launch_signup=confirmed; Max-Age=300; Path=/join; Secure; HttpOnly; SameSite=Lax';
 
 const ADMIN_WAITLIST_URL='https://wateroncall-backend-production-cov9zr.laravel.cloud/api/v1/waitlist';
 async function syncAdminWaitlist(lead){
@@ -116,6 +187,13 @@ const application = {async fetch(req,env,ctx){const url=new URL(req.url);const p
   if(Number(req.headers.get('content-length')||0)>8192)return Response.json({message:'Submission is too large.'},{status:413});
   try{const raw=await req.text();if(raw.length>8192)return Response.json({message:'Submission is too large.'},{status:413});JSON.parse(raw);const response=await fetch('https://wateroncall-backend-production-cov9zr.laravel.cloud/api/v1/booking-preview',{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:raw,signal:AbortSignal.timeout(20000)});const result=await response.json();if(response.ok)return Response.json(result,{headers:{'cache-control':'no-store'}});return Response.json({message:response.status===422?(Object.values(result.errors||{}).flat()[0]||result.message||'Check the delivery details and try again.'):response.status===429?'Too many checks. Please wait a minute before trying again.':response.status===503?'Online coverage checks are being prepared. Join the launch list for follow-up.':'Coverage checks are temporarily unavailable.'},{status:[422,429,503].includes(response.status)?response.status:503});}catch{return Response.json({message:'Coverage checks are temporarily unavailable. Please try again or join the launch list.'},{status:503});}
  }
+ // A short-lived server cookie lets only newly saved signups reach this goal.
+ // Direct visits, validation errors and duplicate submissions do not create one.
+ if(path==='/join/thanks'&&req.method==='GET'){
+  const receipt=(req.headers.get('cookie')||'').split(';').some(part=>part.trim()==='woc_launch_signup=confirmed');
+  if(!receipt)return new Response(null,{status:303,headers:{location:'/join','cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
+  return new Response(signupConfirmationPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
+ }
  if(path==='/join'&&req.method==='GET'){if(ctx&&ctx.waitUntil)ctx.waitUntil(backfillAdminWaitlist(env));return new Response(launchPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}})}
  if(path==='/api/waitlist'&&req.method==='POST'){
   if(!env.PRODUCTION_DB)return Response.json({error:'Launch list is temporarily unavailable.'},{status:503});
@@ -123,7 +201,7 @@ const application = {async fetch(req,env,ctx){const url=new URL(req.url);const p
   const name=String(body.name||'').trim().slice(0,120),email=String(body.email||'').trim().toLowerCase().slice(0,200),phone=String(body.phone||'').trim().slice(0,40),postal=String(body.postal_code||'').trim().toUpperCase().slice(0,20),need=String(body.water_need||'').trim().slice(0,80);
   if(!name||!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return Response.json({error:'Please enter your name and a valid email address.'},{status:400});
   const lead={name,email,phone,postal,need};
-  try{await prepareConfirmations(env.PRODUCTION_DB);await env.PRODUCTION_DB.batch([env.PRODUCTION_DB.prepare('INSERT INTO customer_waitlist (name,email,phone,postal_code,water_need,source,marketing_consent,status) VALUES (?,?,?,?,?,?,?,?)').bind(name,email,phone||null,postal||null,need||null,'website',1,'waiting'),confirmationInsert(env.PRODUCTION_DB,lead)]);const followups=Promise.allSettled([notifyWaitlist(env,lead),syncAdminWaitlist(lead),sendConfirmations(env)]);if(ctx&&ctx.waitUntil)ctx.waitUntil(followups);else await followups;return Response.json({ok:true});}
+  try{await prepareConfirmations(env.PRODUCTION_DB);await env.PRODUCTION_DB.batch([env.PRODUCTION_DB.prepare('INSERT INTO customer_waitlist (name,email,phone,postal_code,water_need,source,marketing_consent,status) VALUES (?,?,?,?,?,?,?,?)').bind(name,email,phone||null,postal||null,need||null,'website',1,'waiting'),confirmationInsert(env.PRODUCTION_DB,lead)]);const followups=Promise.allSettled([notifyWaitlist(env,lead),syncAdminWaitlist(lead),sendConfirmations(env)]);if(ctx&&ctx.waitUntil)ctx.waitUntil(followups);else await followups;return Response.json({ok:true},{headers:{'set-cookie':signupReceiptCookie}});}
   catch(err){if(String(err).toLowerCase().includes('unique') && await env.PRODUCTION_DB.prepare('SELECT email FROM customer_waitlist WHERE email=?').bind(email).first()){if(ctx&&ctx.waitUntil)ctx.waitUntil(syncAdminWaitlist(lead));else await syncAdminWaitlist(lead);return Response.json({ok:true,duplicate:true})}console.error('waitlist insert failed',err);return Response.json({error:'We could not save your signup. Please try again.'},{status:500})}
  }
  const res=await base.fetch(req,env,ctx);if(path==='/'){let html=await res.text();html=html.replaceAll('href="https://app.wateroncall.ca/"','href="/join"');const headers=new Headers(res.headers);headers.delete('content-length');return new Response(html,{status:res.status,headers});}

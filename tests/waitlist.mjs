@@ -36,7 +36,23 @@ try {
   await db.prepare("INSERT INTO customer_waitlist (name,email) VALUES ('Historical','old@example.test')").run();
   assert.equal((await worker.fetch(request({email:'invalid'}),env,{})).status,400);
   assert.equal(calls.length,0);
-  assert.equal((await worker.fetch(request(newLead),env,{})).status,200);
+  const saved = await worker.fetch(request(newLead),env,{});
+  assert.equal(saved.status,200);
+  const receipt = saved.headers.get('set-cookie');
+  assert.match(receipt,/^woc_launch_signup=confirmed;/);
+  for(const flag of ['Max-Age=300','Path=/join','Secure','HttpOnly','SameSite=Lax']) assert.ok(receipt.includes(flag),flag);
+  const confirmed = await worker.fetch(new Request('https://www.wateroncall.ca/join/thanks',{headers:{cookie:receipt.split(';')[0]}}),env,{});
+  assert.equal(confirmed.status,200);
+  assert.match(confirmed.headers.get('x-robots-tag'),/noindex/);
+  assert.equal(confirmed.headers.get('cache-control'),'no-store');
+  const confirmationHtml = await confirmed.text();
+  assert.match(confirmationHtml,/You're on the list/);
+  assert.ok(!confirmationHtml.includes(newLead.email),'No personal details in the confirmation page');
+  for(const cookie of ['', 'unrelated=confirmed', 'woc_launch_signup=invalid']) {
+    const direct = await worker.fetch(new Request('https://www.wateroncall.ca/join/thanks',{headers:{cookie}}),env,{});
+    assert.equal(direct.status,303,'Direct visits cannot count as completed signups');
+    assert.equal(direct.headers.get('location'),'/join');
+  }
   const confirmation = calls.filter(call=>call.payload.to?.[0]===newLead.email);
   assert.equal(confirmation.length,1);
   assert.ok(confirmation[0].payload.html.includes('&lt;b&gt;New subscriber&lt;/b&gt;'));
@@ -46,7 +62,9 @@ try {
   assert.equal((await db.prepare('SELECT status FROM waitlist_confirmation_queue WHERE email=?').bind(newLead.email).first()).status,'sent');
   assert.equal((await db.prepare('SELECT count(*) AS n FROM waitlist_confirmation_queue').first()).n,1,'No historical subscriber email');
   const sentCount = calls.length;
-  assert.equal((await (await worker.fetch(request(newLead),env,{})).json()).duplicate,true);
+  const duplicate = await worker.fetch(request(newLead),env,{});
+  assert.equal((await duplicate.json()).duplicate,true);
+  assert.equal(duplicate.headers.get('set-cookie'),null,'Duplicate signups never receive a new receipt');
   await sendConfirmations(env);
   assert.equal(calls.length,sentCount,'Duplicate signup/scheduler does not send again');
 
