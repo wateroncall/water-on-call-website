@@ -23,14 +23,14 @@ assert.ok(!(await offersScreen.innerText()).includes('Water Haulage'),'Offers do
 await customerSteps.locator('[data-review-offer="b"]').click();
 const review=customerSteps.locator('[data-choice-review]');
 assert.match(await review.innerText(),/Offer B/);
-assert.match(await review.innerText(),/\$175\.00/);
+assert.equal(await review.locator('[data-choice-total]').innerText(),'Price');
 assert.ok(!(await review.innerText()).includes('Example Bulk Water'),'The hauler is hidden before acceptance');
 await customerSteps.locator('[data-accept-sample]').click();
 const confirmation=customerSteps.locator('[data-choice-confirmed]');
 assert.match(await confirmation.innerText(),/Delivery booked/);
 assert.match(await confirmation.innerText(),/Example Bulk Water/);
 await customerSteps.locator('[data-open-demo="delivery"]').click();
-assert.match(await customerSteps.locator('[data-demo="delivery"] .woc-demo-screen').innerText(),/\$175\.00/);
+assert.equal(await customerSteps.locator('[data-demo="delivery"] [data-choice-total]').innerText(),'Price');
 assert.match(await customerSteps.locator('[data-demo="delivery"] .woc-demo-screen').innerText(),/Delivered/);
 assert.deepEqual(demoPosts,[],'Customer demos never submit an order or payment');
 page.off('request',recordDemoRequest);
