@@ -1,4 +1,5 @@
 import {enhanceSearchMarkup, googleAnalyticsTag} from './marketing.js';
+import {addContactHeader} from './public-header.js';
 import base from './index.js';
 import {prepareConfirmations, confirmationInsert, sendConfirmations} from './waitlist-confirmation.js';
 
@@ -221,10 +222,12 @@ async function secureResponse(response, request) {
  if(new URL(request.url).protocol==='https:') headers.set('strict-transport-security','max-age=15552000');
  if(new URL(request.url).pathname.startsWith('/api/')) headers.set('cache-control','no-store');
  let body=response.body;
- // Production public pages only; exclude API responses and preview hosts.
- if(['wateroncall.ca','www.wateroncall.ca'].includes(new URL(request.url).hostname)
-    && headers.get('content-type')?.includes('text/html')) {
-  body=enhanceSearchMarkup(await response.text(), new URL(request.url).pathname.replace(/\/$/,'') || '/').replace('<head>','<head>'+googleAnalyticsTag);
+ if(headers.get('content-type')?.includes('text/html')) {
+  body=addContactHeader(await response.text());
+  // Production public pages only; exclude API responses and preview hosts.
+  if(['wateroncall.ca','www.wateroncall.ca'].includes(new URL(request.url).hostname)) {
+   body=enhanceSearchMarkup(body, new URL(request.url).pathname.replace(/\/$/,'') || '/').replace('<head>','<head>'+googleAnalyticsTag);
+  }
   headers.delete('content-length');
   headers.delete('etag');
  }
