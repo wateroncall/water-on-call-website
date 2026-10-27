@@ -6,7 +6,22 @@ assert.throws(()=>tools.poolVolume({length:-1,width:2,depth:1}));
 const originalFetch=global.fetch;global.fetch=async(url,opts)=>String(url).includes('/booking-preview')?Response.json({available:true,estimated_maximum_cents:25000,quote_required:false,window:'Oct 5–6',message:'This is a preliminary check. No booking or payment has been made.'}):originalFetch(url,opts);
 const server=http.createServer(async(req,res)=>{try{let chunks=[];for await(const chunk of req)chunks.push(chunk);const data=Buffer.concat(chunks);const request=new Request('http://127.0.0.1:4173'+req.url,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:data}: {})});const out=await worker.fetch(request,{},{});res.writeHead(out.status,Object.fromEntries(out.headers));res.end(Buffer.from(await out.arrayBuffer()));}catch(e){res.writeHead(500);res.end(String(e));}});await new Promise(r=>server.listen(4173,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});let errors=[];page.on('pageerror',e=>errors.push(e.message));
-for(const path of ['/','/haulers','/cisterns','/service-area','/pools','/faq','/check-availability','/join','/demo/customer','/demo/hauler']){const response=await page.goto('http://127.0.0.1:4173'+path);assert.equal(response.status(),200,path);assert.ok((await page.locator('h1').count())>0,path);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path);}
+for(const width of [320,390]){
+ await page.setViewportSize({width,height:844});
+ for(const path of ['/','/haulers','/cisterns','/service-area','/pools','/faq','/check-availability','/join','/demo/customer','/demo/hauler']){
+  const response=await page.goto('http://127.0.0.1:4173'+path);
+  assert.equal(response.status(),200,path);
+  assert.ok((await page.locator('h1').count())>0,path);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path+' at '+width);
+  const contact=page.locator('header').getByRole('link',{name:'Contact us',exact:true});
+  assert.equal(await contact.count(),1,'One contact button in the banner: '+path);
+  assert.equal(await contact.getAttribute('href'),'mailto:info@wateroncall.ca');
+  assert.equal(await contact.isVisible(),true,'Contact button is visible: '+path);
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  const bounds=await contact.boundingBox();
+  assert.ok(bounds&&bounds.y>=0&&bounds.y+bounds.height<=844,'Contact stays on screen after scrolling: '+path+' at '+width);
+ }
+}
 await page.goto('http://127.0.0.1:4173/');
 const customerSteps=page.locator('#woc-step-demos');
 assert.match(await page.locator('h1').innerText(),/Order bulk water online/);
