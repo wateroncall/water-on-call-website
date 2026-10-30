@@ -1,4 +1,6 @@
-const contactLink = '<a class="woc-header-contact" data-public-contact href="mailto:info@wateroncall.ca">Contact us</a>';
+const appLinks = '<a class="woc-app-link" href="https://app.wateroncall.ca/customer/orders/create">Order Water</a><a class="woc-app-link" href="https://app.wateroncall.ca/login">Log in</a>';
+
+const contactLink = '<a class="woc-header-contact" data-public-contact href="mailto:info@wateroncall.ca">Contact us</a>' + appLinks;
 
 const headerStyles = `<style id="woc-public-header-styles">
 [data-public-header]{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #dfe7f1}
@@ -17,7 +19,10 @@ html #woc-hauler-complete-preview .woc-page{overflow:clip}
  [data-public-header] .nav{gap:8px;padding:0 14px}
  [data-public-header] .brand{font-size:21px}
  [data-public-header] .links{gap:6px}
- [data-public-header] .links>a:not(.hauler-nav):not(.woc-header-contact){display:none}
+ [data-public-header] .links>a:not(.hauler-nav):not(.woc-header-contact):not(.woc-app-link){display:none}
+ [data-public-header] .nav{height:auto;min-height:72px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+ [data-public-header] .links{flex-wrap:wrap}
+ [data-public-header] .woc-app-link{display:inline-flex!important;align-items:center;min-height:44px;font-size:13px}
  [data-public-header] .links .hauler-nav{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;padding:10px;border-radius:9px;background:#e8f2ff;color:#0757a7;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
  [data-public-header] .links .woc-header-contact{padding:10px;font-size:12px}
 }
@@ -34,6 +39,7 @@ html #woc-hauler-complete-preview .woc-page{overflow:clip}
  [data-public-header] .links .hauler-nav,[data-public-header] .links .woc-header-contact{padding:9px 7px;font-size:11px}
  #woc-hauler-complete-preview header[data-public-header]>.woc-brand{font-size:20px}
 }
+[data-public-header] .woc-app-link{font-weight:700;text-decoration:none;white-space:nowrap}
 </style>`;
 
 // Public pages share one contact destination while keeping their existing actions.

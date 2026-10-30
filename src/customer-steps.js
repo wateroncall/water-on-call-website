@@ -103,8 +103,8 @@ export function customerSteps() {
     <p class="customer-eyebrow">Launching soon in Niagara</p>
     <h1 id="customer-title">Order bulk water online.<br><span>Delivered by local haulers.</span></h1>
     <p class="woc-subtitle">For cisterns, pools, hot tubs and commercial use.</p>
-    <div class="customer-actions"><a class="btn" data-lead-cta="coverage" href="/check-availability">Check your address</a><a class="btn alt" data-lead-cta="launch_list" href="/join">Launch updates</a></div>
-    <p class="customer-launch-note" style="margin-bottom:27px">Join free. We’ll email you when ordering opens.</p>
+    <div class="customer-actions"><a class="btn" href="https://app.wateroncall.ca/customer/orders/create">Order Water</a><a class="btn alt" href="https://app.wateroncall.ca/login">Log in</a></div>
+    <p class="customer-launch-note" style="margin-bottom:27px">Ordering is limited to invited Mak B’s pilot customers while payments are verified. <a href="/join">Get launch updates</a>.</p>
 
     <ol class="woc-story">
       <li class="woc-step">
