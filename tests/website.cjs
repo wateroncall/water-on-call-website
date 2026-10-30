@@ -17,6 +17,11 @@ for(const width of [320,390]){
   assert.equal(await contact.count(),1,'One contact button in the banner: '+path);
   assert.equal(await contact.getAttribute('href'),'mailto:info@wateroncall.ca');
   assert.equal(await contact.isVisible(),true,'Contact button is visible: '+path);
+  for (const [label, href] of [['Order Water','https://app.wateroncall.ca/customer/orders/create'],['Log in','https://app.wateroncall.ca/login']]) {
+   const link=page.locator('header').getByRole('link',{name:label,exact:true});
+   assert.equal(await link.getAttribute('href'),href);
+   assert.equal(await link.isVisible(),true,label+' visible on '+path+' at '+width);
+  }
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   const bounds=await contact.boundingBox();
   assert.ok(bounds&&bounds.y>=0&&bounds.y+bounds.height<=844,'Contact stays on screen after scrolling: '+path+' at '+width);
