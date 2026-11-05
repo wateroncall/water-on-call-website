@@ -130,7 +130,7 @@ for(const outcome of ['new','duplicate','error']){
  await page.evaluate(()=>sessionStorage.removeItem('signup-test-events'));
  await page.locator('[name="name"]').fill('Test Subscriber');
  await page.locator('[name="email"]').fill('signup-check@example.test');
- await page.getByRole('button',{name:'Join launch list',exact:true}).click();
+ await page.getByRole('button',{name:'Get updates',exact:true}).click();
  if(outcome==='new'){
   await page.waitForURL('**/join/thanks');
   assert.match(await page.locator('h1').innerText(),/You're on the list/);
@@ -141,7 +141,7 @@ for(const outcome of ['new','duplicate','error']){
   await page.locator(outcome==='duplicate'?'#msg.ok':'#msg.err').waitFor();
   assert.equal(new URL(page.url()).pathname,'/join','Duplicates and failures stay on the form');
   assert.equal(await signupEvents(),0,'Duplicates and failures do not record new leads');
-  assert.equal(await page.getByRole('button',{name:'Join launch list',exact:true}).isEnabled(),true);
+  assert.equal(await page.getByRole('button',{name:'Get updates',exact:true}).isEnabled(),true);
   await page.goto('http://127.0.0.1:4173/join/thanks');
   assert.equal(new URL(page.url()).pathname,'/join','Duplicates and failures cannot open the completion page');
  }

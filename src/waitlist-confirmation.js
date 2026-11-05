@@ -18,11 +18,11 @@ export function confirmationInsert(db, lead) {
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 function message(row) {
-  const text = `Hi ${row.name},\n\nYou're on the Water OnCall launch list. We'll email you when customer ordering opens in your area. Joining the list does not place an order or take a payment.\n\nQuestions, or want to leave the list? Reply to this email or contact info@wateroncall.ca.\n\nWater OnCall\nhttps://www.wateroncall.ca`;
+  const text = `Hi ${row.name},\n\nYou're subscribed to Water OnCall service and coverage updates. Online ordering is live at https://app.wateroncall.ca/customer/orders/create. Subscribing to updates does not place an order or take a payment.\n\nQuestions, or want to leave the list? Reply to this email or contact info@wateroncall.ca.\n\nWater OnCall\nhttps://www.wateroncall.ca`;
   return {
     from: 'Water OnCall <website@notify.wateroncall.ca>', to: [row.email], reply_to: 'info@wateroncall.ca',
-    subject: 'You’re on the Water OnCall launch list', text,
-    html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Water OnCall signup confirmation</title></head><body style="font:16px/1.6 Arial,sans-serif;color:#102b46;margin:24px"><main style="max-width:560px;margin:auto"><h1 style="font-size:26px">You’re on the launch list.</h1><p>Hi ${escapeHtml(row.name)},</p><p>We’ll email you when customer ordering opens in your area.</p><p>Joining the list does not place an order or take a payment.</p><p>Questions, or want to leave the list? Reply to this email or contact <a href="mailto:info@wateroncall.ca">info@wateroncall.ca</a>.</p><p>Water OnCall<br><a href="https://www.wateroncall.ca">www.wateroncall.ca</a></p></main></body></html>`
+    subject: 'You’re subscribed to Water OnCall updates', text,
+    html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Water OnCall signup confirmation</title></head><body style="font:16px/1.6 Arial,sans-serif;color:#102b46;margin:24px"><main style="max-width:560px;margin:auto"><h1 style="font-size:26px">You’re subscribed.</h1><p>Hi ${escapeHtml(row.name)},</p><p>You’re subscribed to Water OnCall service and coverage updates. Online ordering is live.</p><p>Subscribing to updates does not place an order or take a payment.</p><p>Questions, or want to leave the list? Reply to this email or contact <a href="mailto:info@wateroncall.ca">info@wateroncall.ca</a>.</p><p>Water OnCall<br><a href="https://www.wateroncall.ca">www.wateroncall.ca</a></p></main></body></html>`
   };
 }
 

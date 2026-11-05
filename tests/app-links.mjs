@@ -7,6 +7,7 @@ for (const path of ['/', '/haulers', '/cisterns', '/pools', '/faq', '/service-ar
   assert.match(html, /href="https:\/\/app\.wateroncall\.ca\/customer\/orders\/create">Order Water<\/a>/, path);
   assert.match(html, /href="https:\/\/app\.wateroncall\.ca\/login">Log in<\/a>/, path);
   assert.doesNotMatch(html, /niagara|mak b[’']s|makbs/i, path);
+  assert.ok(!/launch list|pre[ -]?launch|launching soon|when.{0,40}ordering opens|pilot customers/i.test(html), 'No outdated launch wording on '+path);
   if (path === '/') assert.match(html, /Water OnCall is live/);
 }
 console.log('PASS Order Water and login destinations across all public pages; live ordering shown and regional/pilot references absent');
