@@ -13,6 +13,7 @@ for(const width of [320,390]){
   assert.equal(response.status(),200,path);
   assert.ok((await page.locator('h1').count())>0,path);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path+' at '+width);
+  if(path==='/haulers')await page.locator('.woc-mobile-menu>summary').click();
   const contact=page.locator('header').getByRole('link',{name:'Contact us',exact:true});
   assert.equal(await contact.count(),1,'One contact button in the banner: '+path);
   assert.equal(await contact.getAttribute('href'),'mailto:info@wateroncall.ca');
@@ -62,55 +63,41 @@ for(const key of ['order','offers','choose','delivery']){
 await page.setViewportSize({width:390,height:844});
 assert.equal(await page.getByRole('link',{name:'Water Haulers',exact:true}).isVisible(),true,'The homepage hauler link stays available on mobile');
 await page.getByRole('link',{name:'Water Haulers',exact:true}).click();
-assert.match(await page.locator('h1').innerText(),/More deliveries\.[\s\S]*Get paid faster\./);
+assert.match(await page.locator('h1').innerText(),/Grow your business\.[\s\S]*Manage your day\./);
 assert.equal(await page.getByRole('link',{name:'Apply to join',exact:true}).getAttribute('href'),'https://app.wateroncall.ca/hauler/register');
-assert.equal(await page.getByRole('link',{name:'Sign in',exact:true}).getAttribute('href'),'https://app.wateroncall.ca/hauler/login');
-assert.equal(await page.getByRole('link',{name:/try.*demo/i}).count(),0,'The top demo link was removed');
-assert.equal(await page.locator('.woc-flow-item').count(),4);
-for(const id of ['customers','payments','orders','drivers']){
- await page.locator('#woc-'+id+'-toggle').click();
- assert.equal(await page.locator('.woc-feature-toggle[aria-expanded="true"]').count(),1,'Only one feature description is open');
- await page.locator('#woc-'+id+'-content [data-demo]').click();
- assert.equal(await page.locator('#woc-demo-scene').isVisible(),true);
- assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Demo fits on mobile: '+id);
- if(id==='customers'){
-  assert.match(await page.locator('#woc-demo-content').innerText(),/2,500 imp gal/);
-  assert.match(await page.locator('#woc-demo-content').innerText(),/175\.00/);
-  await page.locator('[data-order-action="accept"]').click();
-  assert.equal(await page.locator('[data-order-status]').innerText(),'Accepted');
-  assert.match(await page.locator('[data-order-result]').innerText(),/No booking or payment is made/);
- }else if(id==='payments'){
-  const text=await page.locator('#woc-demo-content').innerText();
-  for(const value of ['$175.00','$165.00','$340.00','Next payout'])assert.ok(text.includes(value),'Payment demo retains '+value);
- }else if(id==='orders'){
-  assert.equal(await page.locator('[data-delivery-map]').isVisible(),true);
-  await page.locator('[data-delivery-mode="list"]').click();
-  assert.equal(await page.locator('.woc-delivery-stop').count(),5);
-  await page.locator('[data-delivery-group="driver"]').click();
-  assert.equal(await page.locator('.woc-delivery-list h3').count(),2);
-  await page.locator('[data-delivery-hide]').click();
-  assert.equal(await page.locator('.woc-delivery-stop').count(),0);
-  assert.match(await page.locator('[data-delivery-results]').innerText(),/All five sample deliveries are completed/);
- }else{
-  const schedule=page.locator('[data-driver-panel="scheduling"]');
-  assert.ok((await schedule.innerText()).includes('Ryan Miller'));
-  assert.deepEqual(await schedule.locator('thead th>span').allTextContents(),['Mon','Tue','Wed','Thu','Fri','Sat','Sun']);
-  assert.equal(await schedule.locator('.hs-shift').count(),4);
-  await schedule.locator('[data-driver-tool="timesheets"]').click();
-  const timesheet=page.locator('[data-driver-panel="timesheets"]');
-  assert.equal(await timesheet.isVisible(),true);
-  const text=await timesheet.innerText();
-  assert.ok(text.includes('Ryan Miller')&&text.includes('36h 00m recorded this week'));
-  assert.ok(!(await page.locator('#woc-demo-content').innerText()).includes('Dan Houle'));
+const hauler=page.locator('#woc-haulers-clean');
+const features=hauler.locator('.woc-feature');
+assert.equal(await features.count(),6,'All six hauler features are available');
+assert.deepEqual(await hauler.locator('.woc-feature-title').allTextContents(),[
+ 'New orders in your area','Daily truck checks','Delivery management',
+ 'Employee scheduling','Time clock & timesheets','Delivery routing'
+]);
+assert.equal(await hauler.locator('.woc-feature[open]').count(),0,'Feature demos start collapsed');
+assert.equal(await hauler.locator('[data-lucide]').count(),0,'Icons are bundled for the public website');
+const haulerPosts=[];
+const recordHaulerRequest=request=>{if(request.method()==='POST')haulerPosts.push(request.url());};
+page.on('request',recordHaulerRequest);
+await hauler.getByRole('button',{name:'See it in action'}).click();
+assert.equal(await hauler.locator('#woc-orders-example').getAttribute('open'),'','The hero action opens the new-order example');
+for(const width of [390,320]){
+ await page.setViewportSize({width,height:844});
+ for(let index=0;index<6;index++){
+  const feature=features.nth(index);
+  if(await feature.getAttribute('open')===null)await feature.locator('summary').click();
+  assert.equal(await hauler.locator('.woc-feature[open]').count(),1,'Only one feature demo is open');
+  assert.equal(await feature.locator('.woc-demo').isVisible(),true);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Hauler demo fits at '+width+': '+index);
  }
- await page.locator('#woc-demo-scene [data-scene="home"]').click();
- assert.equal(await page.locator('#woc-home').isVisible(),true);
 }
-await page.setViewportSize({width:320,height:800});
-assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'The page fits at 320px');
-if(await page.locator('#woc-drivers-toggle').getAttribute('aria-expanded')!=='true')await page.locator('#woc-drivers-toggle').click();
-await page.locator('#woc-drivers-content [data-demo]').click();
-assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'The full seven-day schedule fits at 320px');
+await features.nth(4).locator('summary').click();
+await hauler.getByRole('button',{name:'Punch in',exact:true}).click();
+assert.equal(await hauler.locator('#woc-clock-status').innerText(),'You’re punched in');
+await hauler.getByRole('button',{name:'Punch out',exact:true}).click();
+assert.equal(await hauler.locator('#woc-clock-status').innerText(),'You’re punched out');
+await hauler.locator('.woc-question').first().locator('summary').click();
+assert.equal(await hauler.locator('.woc-question[open] p').isVisible(),true);
+assert.deepEqual(haulerPosts,[],'Hauler examples never create real orders, inspections or time records');
+page.off('request',recordHaulerRequest);
 await page.setViewportSize({width:390,height:844});
 
 await page.goto('http://127.0.0.1:4173/pools');await page.locator('[name=length]').fill('32');await page.locator('[name=width]').fill('16');await page.locator('[name=depth]').fill('5');assert.match(await page.locator('#pool-result').innerText(),/imperial gallons/);assert.match(await page.locator('#pool-result').innerText(),/6 loads/);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:root+'test-artifacts/pool-mobile.png',fullPage:true});
