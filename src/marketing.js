@@ -1,14 +1,14 @@
 const ORIGIN = 'https://www.wateroncall.ca';
 
 export const searchPages = {
-  '/': ['Bulk Water Delivery in Niagara | Water OnCall', 'Preparing an easier way to book cistern, pool and hot tub water delivery in Niagara. Check your address and join the free Water OnCall launch list.'],
-  '/cisterns': ['Cistern Water Delivery in Niagara | Water OnCall', 'Plan cistern water delivery in Niagara with approved local haulers. Check coverage, understand delivery amounts and get notified when ordering opens.'],
-  '/pools': ['Pool Water Delivery in Niagara | Water OnCall', 'Plan a pool fill or top-up in Niagara. Estimate imperial gallons, understand multiple loads and check your address before Water OnCall launches.'],
-  '/service-area': ['Niagara Water Delivery Coverage | Water OnCall', 'Check the planned Niagara launch area for cistern and pool water delivery. Availability and pricing depend on your address and approved hauler coverage.'],
-  '/faq': ['Bulk Water Delivery Questions | Water OnCall Niagara', 'Answers about cistern and pool delivery, imperial gallons, preferred haulers, pricing and the upcoming Water OnCall launch in Niagara.'],
-  '/haulers': ['Join the Niagara Water Hauler Network | Water OnCall', 'Apply to join the Water OnCall bulk water hauler network. Set your coverage and pricing, accept requests and manage delivery work in Niagara.'],
-  '/check-availability': ['Check Water Delivery Coverage & Pricing | Water OnCall', 'Check your Niagara delivery address for preliminary bulk water coverage and pricing. Checking does not place an order or take a payment.'],
-  '/join': ['Join the Niagara Water Delivery Launch List | Water OnCall', 'Get an email when Water OnCall customer ordering opens in your area. Join the free Niagara launch list for cistern, pool and hot tub water delivery.']
+  '/': ['Bulk Water Delivery online | Water OnCall', 'Book cistern, pool and hot tub water delivery online. Check your address and join the free Water OnCall launch list.'],
+  '/cisterns': ['Cistern Water Delivery online | Water OnCall', 'Plan cistern water delivery online with approved local haulers. Check coverage, understand delivery amounts and request your delivery online.'],
+  '/pools': ['Pool Water Delivery online | Water OnCall', 'Plan a pool fill or top-up online. Estimate imperial gallons, understand multiple loads and check your address before booking.'],
+  '/service-area': ['Water Delivery Coverage | Water OnCall', 'Check your address for cistern and pool water delivery. Availability and pricing depend on your address and approved hauler coverage.'],
+  '/faq': ['Bulk Water Delivery Questions | Water OnCall', 'Answers about cistern and pool delivery, imperial gallons, preferred haulers, pricing and booking water through Water OnCall.'],
+  '/haulers': ['Join the Water Hauler Network | Water OnCall', 'Apply to join the Water OnCall bulk water hauler network. Set your coverage and pricing, accept requests and manage delivery work online.'],
+  '/check-availability': ['Check Water Delivery Coverage & Pricing | Water OnCall', 'Check your delivery address for preliminary bulk water coverage and pricing. Checking does not place an order or take a payment.'],
+  '/join': ['Join the Water Delivery Launch List | Water OnCall', 'Water OnCall is live. Get service updates for your area. Join the free service updates list for cistern, pool and hot tub water delivery.']
 };
 
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
@@ -28,7 +28,7 @@ export function enhanceSearchMarkup(html, path) {
   const [title, description] = page;
   html = html.replace(/<title>[^<]*<\/title>/, '<title>'+escapeHtml(title)+'</title>');
   html = html.replace(/<meta name="description" content="[^"]*">/, '');
-  const schema = {'@context':'https://schema.org', '@type':'Organization', name:'Water OnCall', url:ORIGIN, email:'info@wateroncall.ca', description:'A booking platform connecting customers with approved bulk water haulers. Preparing to launch in Niagara, Ontario.'};
+  const schema = {'@context':'https://schema.org', '@type':'Organization', name:'Water OnCall', url:ORIGIN, email:'info@wateroncall.ca', description:'A booking platform connecting customers with approved bulk water haulers. Online ordering is available, subject to local hauler coverage.'};
   const metadata = '<meta name="description" content="'+escapeHtml(description)+'">'
     +'<link rel="canonical" href="'+ORIGIN+path+'">'
     +'<meta property="og:type" content="website"><meta property="og:site_name" content="Water OnCall">'
@@ -43,9 +43,9 @@ export function enhanceSearchMarkup(html, path) {
 export function analyticsConfig(location, referrer = '') {
   const result = {page_location:location.origin+location.pathname, page_referrer:referrer ? referrer.split(/[?#]/)[0] : '', allow_google_signals:false, allow_ad_personalization_signals:false};
   const campaigns = {
-    utm_source:['google','partner','makbs','station','facebook','instagram'],
+    utm_source:['google','partner','station','facebook','instagram'],
     utm_medium:['cpc','referral','offline','social','email'],
-    utm_campaign:['niagara_launch','niagara_cistern_launch'],
+    utm_campaign:['water_delivery','cistern_delivery'],
     utm_content:['cistern_ad','bulk_water_ad','partner_card','station_card','customer_referral','social_post']
   };
   const params = new URLSearchParams(location.search || '');
@@ -72,5 +72,5 @@ document.addEventListener('click', function(event) {
 </script>`;
 
 export function serviceAreaContent() {
-  return `<main class="wrap content"><span class="pill">Preparing our Niagara launch</span><h1>Water delivery coverage starts with your address.</h1><p>Water OnCall is preparing to connect Niagara customers with approved bulk water haulers for cistern deliveries, pool fills and hot tub top-ups.</p><div class="actions lead-actions"><a class="btn" data-lead-cta="coverage" href="/check-availability">Check coverage &amp; pricing</a><a class="btn alt" data-lead-cta="launch_list" href="/join">Get launch updates</a></div><section class="card lead-section"><h2>Planning for Niagara communities</h2><p>Our launch planning includes Lincoln and Beamsville, West Lincoln and Smithville, Pelham and Fonthill, Wainfleet, Port Colborne and surrounding Niagara communities.</p><p>Coverage is based on the driving distance from an approved filling station, the hauler's service area, truck capacity and the type of delivery. A community name alone does not confirm service at a property.</p><a href="/check-availability" data-lead-cta="coverage">Check your delivery address</a></section><section class="grid lead-section"><article class="card"><h2>Cistern water</h2><p>Prepare the amount you need in imperial gallons, the distance from the truck to your fill point and any access instructions.</p><a href="/cisterns" data-lead-cta="cisterns">Plan a cistern delivery</a></article><article class="card"><h2>Pool fills and top-ups</h2><p>Estimate the water needed and allow for multiple loads. Your hauler confirms the delivery plan before you approve a pool quote.</p><a href="/pools">Plan pool water delivery</a></article></section><section class="card"><h2>What happens after checking?</h2><p>The coverage tool gives a preliminary result. It does not reserve a truck, place an order or take a payment. Join the free launch list and we will email you when customer ordering opens in your area.</p><a class="btn" href="/join" data-lead-cta="launch_list">Join the Niagara launch list</a></section></main>`;
+  return `<main class="wrap content"><span class="pill">Now accepting orders</span><h1>Water delivery coverage starts with your address.</h1><p>Water OnCall connects customers with approved bulk water haulers for cistern deliveries, pool fills and hot tub top-ups.</p><div class="actions lead-actions"><a class="btn" data-lead-cta="coverage" href="/check-availability">Check coverage &amp; pricing</a><a class="btn alt" data-lead-cta="launch_list" href="/join">Get service updates</a></div><section class="card lead-section"><h2>Coverage in your area</h2><p>Enter your delivery address to check available water haulers in your area.</p><p>Coverage is based on the driving distance from an approved filling station, the hauler's service area, truck capacity and the type of delivery. A community name alone does not confirm service at a property.</p><a href="/check-availability" data-lead-cta="coverage">Check your delivery address</a></section><section class="grid lead-section"><article class="card"><h2>Cistern water</h2><p>Prepare the amount you need in imperial gallons, the distance from the truck to your fill point and any access instructions.</p><a href="/cisterns" data-lead-cta="cisterns">Plan a cistern delivery</a></article><article class="card"><h2>Pool fills and top-ups</h2><p>Estimate the water needed and allow for multiple loads. Your hauler confirms the delivery plan before you approve a pool quote.</p><a href="/pools">Plan pool water delivery</a></article></section><section class="card"><h2>What happens after checking?</h2><p>The coverage tool gives a preliminary result. It does not reserve a truck, place an order or take a payment. Sign in to request a delivery from available water haulers.</p><a class="btn" href="/join" data-lead-cta="launch_list">Join the service updates list</a></section></main>`;
 }

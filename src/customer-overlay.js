@@ -45,9 +45,9 @@ label .muted{font-weight:400}
 <main class="wrap">
 <a class="brand" href="/"><b>Water</b> OnCall</a>
 <section class="card" aria-labelledby="launch-heading">
-<p class="eyebrow">NIAGARA PRE-LAUNCH</p>
-<h1 id="launch-heading">Bulk water is coming.</h1>
-<p class="intro">Get an email when online ordering opens in your area.</p>
+<p class="eyebrow">ONLINE WATER DELIVERY</p>
+<h1 id="launch-heading">Water OnCall is live.</h1>
+<p class="intro">Book water online, or subscribe below for service updates in your area.</p>
 <form id="f" name="launch-list">
 <div class="grid">
 <div>
@@ -130,8 +130,8 @@ signupForm.addEventListener('submit', async e => {
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'Unable to join right now.');
     m.textContent = j.duplicate
-      ? 'Your email is already on the Water OnCall launch list. We’ll let you know when ordering opens in your area.'
-      : 'You’re on the list! Look for your confirmation email, including in your spam folder. We’ll email you when ordering opens in your area.';
+      ? 'Your email is already on the Water OnCall launch list. You can book water online now.'
+      : 'You’re on the list! Look for your confirmation email, including in your spam folder. You can book water online now.';
     m.className = 'msg ok';
     m.focus();
     if (!j.duplicate) {
@@ -158,7 +158,7 @@ signupForm.addEventListener('submit', async e => {
 const signupConfirmationPage = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>You're on the launch list | Water OnCall</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#f4f8ff;color:#132f4b;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}.wrap{max-width:560px;margin:0 auto;padding:24px 18px}.brand{font-size:25px;font-weight:800;text-decoration:none;color:#132f4b;letter-spacing:-.8px}.brand b{color:#087cff}.card{margin-top:18px;background:#fff;border:1px solid #d9e5f2;border-radius:17px;padding:24px}.check{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#eaf8f1;color:#09633f;font-size:27px;margin-bottom:18px}h1{font-size:30px;line-height:1.18;margin:0 0 14px;letter-spacing:-.8px}p{font-size:15px;line-height:1.6;color:#60758d;margin:0 0 16px}.note{font-size:13px}.btn{display:inline-block;background:#087cff;color:#fff;padding:12px 16px;border-radius:9px;font-size:15px;font-weight:700;text-decoration:none}.help{font-size:13px;margin-top:18px;margin-bottom:0}.help a{color:#0877f9}</style></head>
-<body><main class="wrap"><a class="brand" href="/"><b>Water</b> OnCall</a><section class="card" aria-labelledby="confirmation-title"><div class="check" aria-hidden="true">✓</div><h1 id="confirmation-title">You're on the list.</h1><p>We'll email you when online ordering opens in your area.</p><p>Look for your confirmation email, including in your spam folder.</p><p class="note">Joining the launch list does not place an order or take a payment.</p><a class="btn" href="/">Back to Water OnCall</a><p class="help">Questions? <a href="mailto:info@wateroncall.ca">Contact us</a></p></section></main></body></html>`;
+<body><main class="wrap"><a class="brand" href="/"><b>Water</b> OnCall</a><section class="card" aria-labelledby="confirmation-title"><div class="check" aria-hidden="true">✓</div><h1 id="confirmation-title">You're on the list.</h1><p>You can book water online now. Availability depends on local hauler coverage.</p><p>Look for your confirmation email, including in your spam folder.</p><p class="note">Joining the launch list does not place an order or take a payment.</p><a class="btn" href="/">Back to Water OnCall</a><p class="help">Questions? <a href="mailto:info@wateroncall.ca">Contact us</a></p></section></main></body></html>`;
 
 const signupReceiptCookie = 'woc_launch_signup=confirmed; Max-Age=300; Path=/join; Secure; HttpOnly; SameSite=Lax';
 

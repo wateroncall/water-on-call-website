@@ -100,11 +100,11 @@ export function customerSteps() {
 
 <div id="woc-step-demos">
   <section class="woc-section" aria-labelledby="customer-title">
-    <p class="customer-eyebrow">Launching soon in Niagara</p>
+    <p class="customer-eyebrow">Now accepting water delivery orders</p>
     <h1 id="customer-title">Order bulk water online.<br><span>Delivered by local haulers.</span></h1>
     <p class="woc-subtitle">For cisterns, pools, hot tubs and commercial use.</p>
     <div class="customer-actions"><a class="btn" href="https://app.wateroncall.ca/customer/orders/create">Order Water</a><a class="btn alt" href="https://app.wateroncall.ca/login">Log in</a></div>
-    <p class="customer-launch-note" style="margin-bottom:27px">Ordering is limited to invited Mak B’s pilot customers while payments are verified. <a href="/join">Get launch updates</a>.</p>
+    <p class="customer-launch-note" style="margin-bottom:27px">Water OnCall is live. <a href="https://app.wateroncall.ca/login">Book your water delivery</a>.</p>
 
     <ol class="woc-story">
       <li class="woc-step">
@@ -125,7 +125,7 @@ export function customerSteps() {
               <dl class="woc-fields">
                 <div class="woc-field"><dt>Delivery type</dt><dd>Cistern</dd></div>
                 <div class="woc-field"><dt>Water needed</dt><dd>2,000 Imp gal</dd></div>
-                <div class="woc-field"><dt>Delivery address</dt><dd>123 Sample Lane, Niagara Region</dd></div>
+                <div class="woc-field"><dt>Delivery address</dt><dd>123 Sample Lane, Your area</dd></div>
                 <div class="woc-field"><dt>When</dt><dd>Flexible · next 1–2 business days</dd></div>
                 <div class="woc-field"><dt>Water hauler</dt><dd>Find an available hauler</dd></div>
               </dl>
@@ -227,7 +227,7 @@ export function customerSteps() {
               <dl class="woc-fields">
                 <div class="woc-field"><dt>Water delivered</dt><dd>2,000 Imp gal</dd></div>
                 <div class="woc-field"><dt>Your water hauler</dt><dd data-choice-hauler>Sample Water Haulage</dd></div>
-                <div class="woc-field"><dt>Delivery address</dt><dd>123 Sample Lane, Niagara Region</dd></div>
+                <div class="woc-field"><dt>Delivery address</dt><dd>123 Sample Lane, Your area</dd></div>
                 <div class="woc-field"><dt>Sample total paid (CAD)</dt><dd data-choice-total>Price</dd></div>
               </dl>
               <ol class="woc-delivery-stages" aria-label="Sample delivery updates">
