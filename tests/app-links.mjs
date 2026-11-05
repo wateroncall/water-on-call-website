@@ -6,6 +6,7 @@ for (const path of ['/', '/haulers', '/cisterns', '/pools', '/faq', '/service-ar
   const html = await response.text();
   assert.match(html, /href="https:\/\/app\.wateroncall\.ca\/customer\/orders\/create">Order Water<\/a>/, path);
   assert.match(html, /href="https:\/\/app\.wateroncall\.ca\/login">Log in<\/a>/, path);
-  if (path === '/') assert.match(html, /invited Mak B’s pilot customers/);
+  assert.doesNotMatch(html, /niagara|mak b[’']s|makbs/i, path);
+  if (path === '/') assert.match(html, /Water OnCall is live/);
 }
-console.log('PASS Order Water and login destinations across all public pages; pilot limitation shown on homepage');
+console.log('PASS Order Water and login destinations across all public pages; live ordering shown and regional/pilot references absent');

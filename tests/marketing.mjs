@@ -23,11 +23,11 @@ assert.ok(robots.includes('Sitemap: '+origin+'/sitemap.xml'));
 const demo = await (await worker.fetch(new Request(origin+'/demo/customer'), {}, {})).text();
 assert.ok(demo.includes('content="noindex, follow"'));
 
-const config = analyticsConfig(new URL(origin+'/cisterns?utm_source=google&utm_medium=cpc&utm_campaign=niagara_cistern_launch&utm_content=cistern_ad&email=private@example.test&gclid=private-tracking&address=123+Road'), 'https://example.test/?email=secret@example.test');
+const config = analyticsConfig(new URL(origin+'/cisterns?utm_source=google&utm_medium=cpc&utm_campaign=cistern_delivery&utm_content=cistern_ad&email=private@example.test&gclid=private-tracking&address=123+Road'), 'https://example.test/?email=secret@example.test');
 assert.equal(config.page_location, origin+'/cisterns');
 assert.equal(config.campaign_source, 'google');
 assert.equal(config.campaign_medium, 'cpc');
-assert.equal(config.campaign_name, 'niagara_cistern_launch');
+assert.equal(config.campaign_name, 'cistern_delivery');
 assert.equal(config.campaign_content, 'cistern_ad');
 assert.ok(!JSON.stringify(config).includes('private'));
 assert.ok(!JSON.stringify(config).includes('secret'));
