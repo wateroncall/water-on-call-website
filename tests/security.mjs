@@ -2,7 +2,17 @@ import assert from 'node:assert/strict';
 import worker from '../src/customer-overlay.js';
 for (const host of ['wateroncall.ca','www.wateroncall.ca']) {
  const r=await worker.fetch(new Request(`http://${host}/join?source=test`),{},{});
- assert.equal(r.status,308);assert.equal(r.headers.get('location'),`https://${host}/join?source=test`);
+ assert.equal(r.status,301);assert.equal(r.headers.get('location'),'https://www.wateroncall.ca/join?source=test');
+}
+for (const [path,target] of [['/','/'],['/cisterns?source=test','/cisterns?source=test'],['/customers','/'],['/water-haulers?source=test','/haulers?source=test']]) {
+ const r=await worker.fetch(new Request('https://wateroncall.ca'+path),{},{});
+ assert.equal(r.status,301);
+ assert.equal(r.headers.get('location'),'https://www.wateroncall.ca'+target);
+}
+for (const [path,target] of [['/customers','/'],['/water-haulers','/haulers']]) {
+ const r=await worker.fetch(new Request('https://www.wateroncall.ca'+path),{},{});
+ assert.equal(r.status,301);
+ assert.equal(r.headers.get('location'),'https://www.wateroncall.ca'+target);
 }
 for(const path of ['/','/join','/haulers','/missing','/__resend-test?run=1']) {
  const r=await worker.fetch(new Request('https://www.wateroncall.ca'+path),{},{});

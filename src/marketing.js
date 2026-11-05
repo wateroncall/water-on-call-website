@@ -1,14 +1,14 @@
 const ORIGIN = 'https://www.wateroncall.ca';
 
 export const searchPages = {
-  '/': ['Bulk Water Delivery online | Water OnCall', 'Book cistern, pool and hot tub water delivery online. Check your address and join the free Water OnCall launch list.'],
+  '/': ['Bulk Water Delivery online | Water OnCall', 'Book cistern, pool and hot tub water delivery online. Check coverage and request your delivery from approved local water haulers.'],
   '/cisterns': ['Cistern Water Delivery online | Water OnCall', 'Plan cistern water delivery online with approved local haulers. Check coverage, understand delivery amounts and request your delivery online.'],
   '/pools': ['Pool Water Delivery online | Water OnCall', 'Plan a pool fill or top-up online. Estimate imperial gallons, understand multiple loads and check your address before booking.'],
   '/service-area': ['Water Delivery Coverage | Water OnCall', 'Check your address for cistern and pool water delivery. Availability and pricing depend on your address and approved hauler coverage.'],
   '/faq': ['Bulk Water Delivery Questions | Water OnCall', 'Answers about cistern and pool delivery, imperial gallons, preferred haulers, pricing and booking water through Water OnCall.'],
   '/haulers': ['Join the Water Hauler Network | Water OnCall', 'Apply to join the Water OnCall bulk water hauler network. Set your coverage and pricing, accept requests and manage delivery work online.'],
   '/check-availability': ['Check Water Delivery Coverage & Pricing | Water OnCall', 'Check your delivery address for preliminary bulk water coverage and pricing. Checking does not place an order or take a payment.'],
-  '/join': ['Join the Water Delivery Launch List | Water OnCall', 'Water OnCall is live. Get service updates for your area. Join the free service updates list for cistern, pool and hot tub water delivery.']
+  '/join': ['Water OnCall Service Updates', 'Water OnCall is live. Get service updates for your area. Join the free service updates list for cistern, pool and hot tub water delivery.']
 };
 
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));

@@ -7,7 +7,7 @@ on:
     paths: ['src/customer-overlay.js', 'src/marketing.js', 'tests/analytics-live.cjs', '.github/workflows/analytics-live.yml']
 jobs:
   trace:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
