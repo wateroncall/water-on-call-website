@@ -13,15 +13,18 @@ for(const width of [320,390]){
   assert.equal(response.status(),200,path);
   assert.ok((await page.locator('h1').count())>0,path);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow '+path+' at '+width);
-  if(path==='/haulers')await page.locator('.woc-mobile-menu>summary').click();
   const contact=page.locator('header').getByRole('link',{name:'Contact us',exact:true});
   assert.equal(await contact.count(),1,'One contact button in the banner: '+path);
   assert.equal(await contact.getAttribute('href'),'mailto:info@wateroncall.ca');
   assert.equal(await contact.isVisible(),true,'Contact button is visible: '+path);
-  for (const [label, href] of [['Order Water','https://app.wateroncall.ca/customer/orders/create'],['Log in','https://app.wateroncall.ca/login']]) {
-   const link=page.locator('header').getByRole('link',{name:label,exact:true});
-   assert.equal(await link.getAttribute('href'),href);
-   assert.equal(await link.isVisible(),true,label+' visible on '+path+' at '+width);
+  const text=page.locator('header').getByRole('link',{name:'Text us',exact:true});
+  assert.equal(await text.count(),1,'One text button in the banner: '+path);
+  assert.equal(await text.getAttribute('href'),'sms:+12894028775');
+  assert.equal(await text.isVisible(),true,'Text button is visible: '+path);
+  assert.equal(await page.locator('header .woc-app-link').count(),0,'Duplicate app links removed: '+path);
+  if(path==='/') {
+   assert.equal(await page.getByRole('link',{name:'Order Water',exact:true}).count(),1);
+   assert.equal(await page.getByRole('link',{name:'Log in',exact:true}).count(),1);
   }
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   const bounds=await contact.boundingBox();
@@ -147,5 +150,6 @@ for(const outcome of ['new','duplicate','error']){
  }
 }
 assert.deepEqual(errors,[]);console.log('PASS: calculator math, 10 routes, mobile layouts, quote form interaction, and new/duplicate/failed signup conversion checks');await browser.close();await new Promise(r=>server.close(r));})().catch(e=>{console.error(e);process.exit(1)});
+
 
 
